@@ -26,79 +26,76 @@
 
 
 \section*{Introduction}
+The impact of large language models (LLMs) in recent years cannot be understated. 
+Language models are finding their way in nearly every task imaginable, thanks to incremental improvements in the quality of prompt answers, suggestions and code tips. Some people even tend to use prompt-based models to answer their specific questions, in a way akin to how search engines operated in recent years. 
 
-This section should briefly describe the background to your
-project and explain why your project is a worthwhile task.
-You could add some references here, if appropriate, to cite 
-relevant articles
-\cite{wooldridge2002,shoham95} and \cite{garcia-camino2005}.
+A model assisting workers in high-level abstraction jobs, such as those in creative writing, code development, medical practice and what are generally fields which require deep expertise in a variety of topics and enormous knowledge bases, can potentially spark a productivity boom similar to the ones experienced during the invention of semiconductors.
+
+Most current language models, therefore, are trained on massive datasets comprising data almost on the order of magnitude of all resources available on the world wide web. Some would argue [[maybe insert ref]] that this would prove more than enough to satisfy the needs of the everyday consumer. However, defining one such LLM as artificial intelligence would largely neglect one of the most essential factors of human intelligence - creativity. 
+
+Evaluating and benchmarking creativity is a task that has already been undertaken by researchers [[insert ref]] with varying degrees of success owing to the very abstract definition of the term itself. This project, therefore, seeks to compile and produce a software package that can efficiently, and more importantly, accurately represent creativity in language, or more formally, linguistic creativity. 
 
 \section*{Goals}
 
-This section should describe the main goals of your project.
-In other words, describe \emph{wht} it is that you want to do.
-Are you building a tool or an application? What functionality 
-already exists, and what will you have to do yourself?
+As outlined above, we seek to answer two key questions. The first and most important being:
 
-Try to make it clear which goals are central to your project, and which
-might be optional extras. Try to be realistic about making your
-goals {\em achievable.}
+\begin{itemize}
+    \item Can psycho-linguistically motivated measures (that is, the explored metrics) successfully characterise creative properties in language?
+\end{itemize}
+// does this give the evaluator confidence in the project?
+
+And, following the successful implementation of the first, we shall attempt to answer the second question:
+\begin{itemize}
+    \item To what extent does hyperparameter tuning or varying decoding strategies on a given set of LLMs influence creativity as measured by our creativity metric?
+\end{itemize}
+
+To these ends, we develop a suite of benchmarks we shall distribute and report the results of.
+
+% In other words, describe \emph{wht} it is that you want to do.
+% Are you building a tool or an application? What functionality 
+% already exists, and what will you have to do yourself?
+
+% Try to make it clear which goals are central to your project, and which
+% might be optional extras. Try to be realistic about making your
+% goals {\em achievable.}
 
 
 \section*{Methodology}
+A major part of the project will be spent on research and iterative development of the benchmarks. This is a process that requires analysing and compiling resources on creative aspects of writing and language overall. Another major factor may be the development time spent on measuring the creativity of existing language models. A big chunk of contemporary language models based on neural networks, be those LSTM-, RNN-, or Transformer-based, can have a net size on the order of hundreds of millions of weights. These models need to be moved to a high-performance computing cluster, as even a high-end personal computer would not be able to handle having those in memory, let alone perform the number crunching. \newline A relatively high-level view of the development process would be:
 
-This section should describe {\em how} you will conduct
-your project. You should explain in general terms
-the activities you will be carrying out during your project, such as:
-%
 \begin{itemize}
-\item reading about related work -- either to get ideas on how to
-      proceed, or to compare your approach with what was done before;
-\item learning a new programming language or API;
-\item learning about relevant technologies;
-\item developing prototypes to test ideas;
-\item testing and debugging early design choices.
+\item compiling and consulting available literature on the matter of creativity;
+\item developing a systematic and rigorous set of benchmarks based on sound methods;
+\item experimenting and finetuning the developed technology;
+\item exploring potential exhibited creativity, prompted by hyperparameter tuning; 
+\item larger-scale testing on HPC clusters and gathering result data;
 \end{itemize}
 %
-The above examples are purely suggestions. You should try to think
-of what would be appropriate for your specific project.
 
 \section*{Resources Required}
-
-You should mention here the hardware and software resources you will
-require. Even if it seems obvious that you might only need Java and a PC, 
-you should still say so!
-
+A mid- to high-end personal computer would be required for prototyping the metric, as well as building the interface and tools to interact with the system.  
+Furthermore, a high-performance computing (HPC) cluster will be needed for utilising the large language models which have been open-sourced for research and general purposes. 
+Python is the programming language of choice in the field of research and more specifically machine learning. It is a flexible language allowing the use of high-order abstractions interfacing with low-level fast, extremely CPU- and GPU-efficient operations. Therefore,  the development will be primarily carried out in Python via an interactive shell so that the system can be rapidly prototyped and improved upon. 
 
 \section*{Risk Assessment}
 
-Try to describe possible circumstances (e.g. a particular piece of
-technology doesn't work or is too expensive) that might cause
-the project to become become infeasible. What would you have to do
-or change to recover your project?
+The only major risks that threaten the successful execution of the project are schedule-based. The project is intensive and requires thorough research and dedication. Currently, we have mitigated this risk by carefully considering a schedule and goals outlined week by week. The schedule takes into account the authors' capabilities and seeks to not place a heavy burden on them during the project execution.
+
+Frequent meetings with the project supervisor serve to check on the progress achieved in the past week, as well as to clarify the deliverables for the upcoming one. Through strict adherence to the timetable outlined below, we minimise the risks against the successful execution of the project.  
 
 \section*{Timetable}
-
-This section should describe the {\em schedule} for your project. 
-You should describe the various activities you expect to perform
-and their durations, along with any deadlines and deliverables.
-It is often useful to collect all of this information in a
-{\em Gantt chart}, as shown in Figure~\ref{fig:plan} below:
+Please refer to Figure~\ref{fig:plan} outlined below. 
 
 \begin{figure}[htb]
 \begin{center}
-% \includegraphics[scale=0.65]{ProjectPlan.eps}
-\caption{Main Project Activities\label{fig:plan}}
+\includegraphics[width=\textwidth]{plan.png}
+\caption{Main Project Activities \label{fig:plan}}
 \end{center}
 \end{figure}
 
 % For information, this figure was created using xfig, and 
 % converted to encapsulated postscript by a command in the Makefile
 % before being included as a graphic in the \LaTeX document.
-
-Don't forget to add time at the end of your project for 
-evaluation and writing-up! This could easily require 2-3 weeks.
-
 
 \bibliography{ProjectPlan}
 
