@@ -17,6 +17,7 @@
 %   \citeyear{key} ==>>             1990                                             
 
 \usepackage[round,colon,authoryear]{natbib}
+\usepackage[acronym]{glossaries}
 \setlength{\bibsep}{0pt}
 \bibliographystyle{apalike}
 \usepackage{hyperref}
@@ -57,34 +58,46 @@
 %% references to those file not included) but will produce a dvi
 %% file with only those files/chapters you specify included.
 
-\begin{document}
+\input{sections/abbreviations.tex}
 
+% Commands for making in-line notes
+\usepackage{xcolor}
+\newcommand{\ajs}[1]{\textcolor{orange}{[AJS: #1]}}
+\newcommand{\note}[1]{\textcolor{red}{#1}}
+\newcommand{\mk}
+[1]{\textcolor{blue}{[MK: #1]}}
+
+\begin{document}
+ 
 %%%% Create the title page and standard declaration.
 
 \maketitle
 \makedeclaration
 
 %%%% Then the abstract and acknowledgements
-
 \begin{abstract}
   An expansion of the title and contraction of the thesis.
 \end{abstract}
 
 \begin{acknowledgements}
-  Much stuff borrowed from elsewhere
+  Much stuff borrowed from elsewhere.
 \end{acknowledgements}
+
 
 %%%% It should have a table of contents, but delete the other two as
 %%%% necessary.
 
 \tableofcontents
+
+\printglossary[type=\acronymtype]
+
 %\listoftables
 %\listoffigures
 
 \include{sections/introduction}
 % \include{faq}
 % \include{literature-survey}
-% \include{design}
+\include{sections/methods.tex}
 % \include{implementation}
 % \include{evaluation}
 % \include{discussion}

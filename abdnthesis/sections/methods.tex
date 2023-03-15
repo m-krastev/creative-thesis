@@ -2,6 +2,51 @@
 \label{chap:methods}
 
 \section{Datasets}
+Some introductory text on the purpose and uses of the datasets...
+\subsection{Brown Corpus}
+The Brown Corpus \citep*{francis1979brown} is a widely used corpus in the field of computational linguistics, noted for the small variety of genres of literature it contains. The Corpus itself is founded on a compilation of American English literature from the year 1961. It is also small in terms of size, totalling around one million words, at least compared to modern corpora, which we also explore later on. The corpus also suffers from the issue of recency, as the works and language may be outdated for modern speakers of English.
+
+Of interest is the fact that the corpus has been manually tagged for parts of speech, a process that tends to be error-prone. %citation good
+As we will see later on, this fact has implications in terms of the supervised learning algorithms we implement for creativity evaluation. Still, we opt to utilise it primarily for prototyping purposes and drawing preliminary conclusions about the effectiveness of the implemented algorithms, rather than in-depth analysis and publication of results.
+
+\subsection{Project Gutenberg}
+Project Gutenberg\footnote[1]{\url{https://www.gutenberg.org/}} is a large collection of more than 50,000 works available in the public domain. The collection contains literature from various years and various genres and thus is suitable for training and evaluation of the developed benchmarks in the context of creativity study. 
+
+As the Project does not offer an easy to process copy of its collection, we turn to the work of \cite{DBLP:journals/corr/abs-1812-08092}. The team developed a catalogue for on-demand download of the entire set of books available on the Project Gutenberg website, intended for use in the study of computational linguistics. The tool avoids the overhead of writing a web-scraper or a manual parser for the downloadable collections of Project Gutenberg books made available by third parties, as well as enables easy synchronization of newly released literature. Instead, we are only required to develop a simple pipeline for the data to be fed into the utilised systems. 
+
+\subsection{Hierarchical Neural Story Generation}
+\cite{fan_hierarchical_2018} 
+\subsection{WordNet}
+WordNet\citep{wordnet1998fellbaum} is a lexical database of semantic relations between words that links words into semantic relations including synonyms, hyponyms, and meronyms. The synonyms are grouped into synsets with short definitions and usage examples. It can thus be seen as a combination and extension of a dictionary and thesaurus \citep{enwiki:1143619785}. 
+
+For our specific use cases, we have identified it as a valuable resource in terms of relational representation of words in semantic space. In the given context, this enables us to traverse a semantic graph for synonyms and related words for the goal of enriching potential similarity between the set of creative parts of speech (i.e., nouns, adjectives, adverbs), which we narrow down our scope to in particular. 
+% this sounds a bit weird
+% insert potential uses
+\subsection{Word2Vec}
+\citet*{mikolov_word2vec_2013} show in their work that words may be represented as dense vectors in $N$-dimensional space, and we can perform mathematical operations on them that may yield effective results in terms of word representation. 
+
+\subsection*{Measuring distance in vector representations of semantic tokens}
+Intuition tells us that the dot product of vectors in $N$-dimensional space will grow when the set of vectors has similar values and decrease when the values are not similar. Thus, we can then construct the following metric for semantic similarity between vector representations of words:
+$$ D(v,w) = v \times w = \sum_{i=1}^{N} v_i w_i = v_1 w_1 + v_2 w_2 + \dots + v_N w_N $$ 
+
+The current metric, however, suffers from the problem that vectors of higher dimensions will inevitably be larger than vectors with lower dimensions. Furthermore, embedding vectors for words that occur frequently in text, tend to have high values in more dimensions, that is, they correlate with more words. The proposed solution is to normalize using the \textbf{vector length} as defined:
+$$ | v| = \sqrt{\sum_{i=1}^{N}v_i^2}$$
+
+Therefore, we obtain the following:
+
+$$ \text{Similarity} (v, w) = \frac{v \times w}{|v| |w|} = \frac{\sum_{i=1}^{N} v_i w_i}{\sqrt{\sum_{i=1}^{N}v_i^2} \sqrt{\sum_{i=1}^{N}w_i^2}}$$
+
+This product turns out to be the same as the cosine of the angle between two vectors:
+
+$$ \frac{a \times b}{|a| |b|} = \cos(\theta) $$
+
+Therefore, we will call this metric the \textbf{cosine similarity} of two words. As mentioned, the similarity grows for vectors with similar features along the same dimensions. Note the boundaries of said cosine metric: we get $-1$ for vectors which are polar opposites, $0$ for orthogonal vectors, and $1$ for equivalent vectors. Of note is the fact that such learned vector embeddings only have values in the positive ranges, thus, it is impossible to have negative values for the cosine similarity (Similarity$(a,b) \in [0,1]$).
+
+Contrary to it, we also identify the metric of \textbf{cosine distance} between two vectors, as one minus the similarity of the vectors, or:
+
+$$ \text{Distance}(v,w) = 1 - \text{Similarity}(v,w) $$
+
+The cosine distance may prove useful when dealing with minimisation problems as is often the case with machine learning.
 
 \section{Metrics}
 

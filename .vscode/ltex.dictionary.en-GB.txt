@@ -4,3 +4,4 @@ Cloze
 parallelisable
 Poggers
 UKRI
+synsets
