@@ -15,6 +15,7 @@ from models import sent_predictions
 
 sns.set_theme()
 
+
 class CreativityBenchmark:
     """
         This class is used to benchmark the creativity of a text.
@@ -98,7 +99,7 @@ class CreativityBenchmark:
         ax1.set_ylim(bottom=30)
 
         # Set counts to appear with the K suffix
-        ax1.yaxis.set_major_formatter(plt.FuncFormatter( # type: ignore
+        ax1.yaxis.set_major_formatter(plt.FuncFormatter(  # type: ignore
             lambda x, loc: f"{int(x/1000):,}K"))
         ax1.tick_params(axis='x', labelrotation=90)
 
@@ -143,7 +144,7 @@ class CreativityBenchmark:
 
         ax.set(xbound=(0, df.shape[0]), ylim=(0, 1), title='Parts of Speech in Emma',
                xlabel='Sentence #', ylabel='Proportion of sentence')
-        ax.xaxis.set_major_formatter(plt.FuncFormatter( # type: ignore
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(  # type: ignore
             lambda x, loc: f"{x/df.shape[0]:.0%}"))
 
         ax.legend()
@@ -196,24 +197,25 @@ class CreativityBenchmark:
         return [len(sent) for sent in self.content_word_sentlevel()]
 
     @staticmethod
-    def concreteness(data: str | list[str], concreteness_df: Optional[pd.DataFrame] = None) -> float | None | list[float|None]:
+    def concreteness(data: str | list[str], concreteness_df: Optional[pd.DataFrame] = None) -> float | None | list[float | None]:
         """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
         # TODO: Possibly look at amortized values given standard deviations
         if not concreteness_df:
             concreteness_df = pd.read_csv('../data/concreteness.txt', sep="\t")
             # concreteness_df.set_index("Word", inplace=True)
             # concreteness_df.sort_index(inplace=True)
-        
+
         # Fastest way for lookups so far.
         concreteness = dict(
             zip(concreteness_df["Word"], concreteness_df["Conc.M"]))
 
-        if isinstance(data,str):
+        if isinstance(data, str):
             return concreteness.get(data.lower(), None)
         if isinstance(data, list):
             return [concreteness.get(w.lower(), None) for w in data if w not in CreativityBenchmark.stopwords]
-        raise TypeError(f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
-    
+        raise TypeError(
+            f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
+
     def calculate_sent_slopes(self, model, n) -> list[list[float]]:
         # Returns slopes for the __words__ of the first `n` sentences of the `sents` list of sentences.
         res = []
@@ -224,21 +226,20 @@ class CreativityBenchmark:
                 [slope_coefficient(
                     np.arange(len(result)),
                     result)
-                for result in results
-                if len(result) > 0]
+                 for result in results
+                 if len(result) > 0]
             )
 
         return res
-    
+
     @property
     def model(self):
         return self.model
-    
+
     @property
     def word2vec_model(self):
         return self.word2vec_model
 
-    
     def calculate_sim_scores(self, model, sim_function: Callable, max_sents=-1):
         similarity_scores = []
         for sent in self.tokenized_sents[:max_sents]:
@@ -274,7 +275,6 @@ class CreativityBenchmark:
 
         return similarity_scores
 
-
     # def sim_func(word: str, pred: str) -> float | None:
     #     """Arbitrary function to use when calculating vector similarity between the embeddings of two words. Serves as an example.
 
@@ -295,8 +295,7 @@ class CreativityBenchmark:
     #     except:
     #         pass
 
-
-    def report(self, print_time=True, print_report=True, postag_distribution=False):
+    def report(self, print_time=True, print_report=True, postag_distribution=False) -> pd.Series | None:
         """
             Generates a report for the text.
         """
@@ -311,7 +310,8 @@ class CreativityBenchmark:
         avg_num_content_words = sum(ncontent_words) / len(ncontent_words)
         ratio_content_words = sum(ncontent_words) / len(self.words)
 
-        concreteness = [_ for _ in self.concreteness(self.words) if _] # type: ignore
+        concreteness = [_ for _ in self.concreteness(
+            self.words) if _]  # type: ignore
         concreteness_num = sum(concreteness) / len(concreteness)
 
         stats.extend([len(self.words), len(self.sents), self.avg_word_length(), self.avg_sentence_length(
@@ -338,20 +338,18 @@ class CreativityBenchmark:
                     ret["OTHER"] += val / total
 
             stats.extend([val for val in ret.values()])
-            labels.extend(f"Distribution {key}" for key in ret.keys())
+            labels.extend(f"Ratio {key}" for key in ret.keys())
 
         result = pd.Series(stats, index=labels)
-
-        return_string = f"""Text (Title={self.title}), \n{result.to_string(float_format=lambda x: f"{x:.2f}")}
-        """
 
         if print_time:
             print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore
 
         if print_report:
+            return_string = f"""Text (Title={self.title}), \n{result.to_string(float_format=lambda x: f"{x:.2f}")}"""
             print(return_string)
         else:
-            return return_string
+            return result
 
 
 if __name__ == "__main__":

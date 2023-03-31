@@ -7,6 +7,7 @@ from nltk.data import find
 import nltk
 import numpy as np
 
+
 def sent_predictions(sent: str | list[str], bench: Any, model: Any, return_tokens: bool = False, k: int = 20):
     """Returns predictions for content words in a given sentence. If return_tokens is true, returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, corresponding to the likekihoods in the first list.
 
@@ -134,4 +135,3 @@ word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 model = BertForMaskedLM.from_pretrained("bert-base-uncased")
-
