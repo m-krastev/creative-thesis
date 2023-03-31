@@ -1,34 +1,33 @@
+"""Main Class for the Application Logic"""
 
 # pylint: disable=missing-function-docstring, invalid-name
-from time import time, time_ns
-from typing import Any, Generator, Tuple, Optional
-import pandas as pd
-
-import nltk
-
-import numpy as np
+from time import time
+from typing import Any, Callable, Generator, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import nltk
+import numpy as np
+import pandas as pd
 import seaborn as sns
 from scipy.interpolate import make_interp_spline
+from utils import mean, slope_coefficient
+from models import sent_predictions
 
 sns.set_theme()
-
 
 class CreativityBenchmark:
     """
         This class is used to benchmark the creativity of a text.
     """
-    
+
     plots_folder = 'plots/'
-    tags = set(nltk.tag.mapping._UNIVERSAL_TAGS) # type: ignore
-    tags_of_interest = set(['NOUN', 'VERB', 'ADJ', 'ADV'])
+    tags = set(nltk.tag.mapping._UNIVERSAL_TAGS)  # type: ignore
+    tags_of_interest = set(['NOUN', 'VERB', 'ADJ'])  # ignore 'ADV'
     tag_to_embed = {tag: i for i, tag in enumerate(tags)}
     embed_to_tag = {i: tag for i, tag in enumerate(tags)}
     stopwords = set(nltk.corpus.stopwords.words('english'))
 
-    
-    def __init__(self, raw_text: str, title: str = "unknown"):
+    def __init__(self, raw_text: str, title: str = "unknown", tagset: str = 'universal'):
         self.raw_text = raw_text
         self.words = nltk.word_tokenize(raw_text, preserve_line=True)
         self.sents = nltk.sent_tokenize(self.raw_text)
@@ -38,12 +37,12 @@ class CreativityBenchmark:
 
         # Initialize a list to hold the POS tag counts for each sentence
         self.postag_counts: list[nltk.FreqDist] = []
-        self.tagset = ""
+        self.tagset = tagset
         self.title = title
 
     def ngrams(self, n, **kwargs):
         """Returns ngrams for the text."""
-        return nltk.ngrams(self.raw_text, n, kwargs)  # pylint: disable=too-many-function-args
+        return nltk.ngrams(self.raw_text, n, kwargs)  # type: ignore # pylint: disable=too-many-function-args
 
     def sent_postag_counts(self, tagset: str = "universal") -> list[nltk.FreqDist]:
         """Returns sentence-level counts of POS tags for each sentence in the text. """
@@ -62,9 +61,15 @@ class CreativityBenchmark:
 
             return self.postag_counts
 
-    def book_postag_counts(self, tagset) -> nltk.FreqDist:
+    @property
+    def tagged_words(self):
+        return nltk.pos_tag(self.words, tagset=self.tagset)
+
+    def book_postag_counts(self, tagset: Optional[str] = None) -> nltk.FreqDist:
         """Get a counter object for the Parts of Speech in the whole book."""
 
+        if not tagset:
+            tagset = self.tagset
         # Opt to use this instead for consistency.
         book_total_postags = nltk.FreqDist()
         for l in self.sent_postag_counts(tagset=tagset):
@@ -93,7 +98,7 @@ class CreativityBenchmark:
         ax1.set_ylim(bottom=30)
 
         # Set counts to appear with the K suffix
-        ax1.yaxis.set_major_formatter(plt.FuncFormatter(
+        ax1.yaxis.set_major_formatter(plt.FuncFormatter( # type: ignore
             lambda x, loc: f"{int(x/1000):,}K"))
         ax1.tick_params(axis='x', labelrotation=90)
 
@@ -106,7 +111,7 @@ class CreativityBenchmark:
 
         fig.subplots_adjust(hspace=0.8)
 
-    def plot_postag_distribution(self, fig=None, ax=None, **kwargs) -> Tuple[plt.Figure, plt.Axes]:
+    def plot_postag_distribution(self, fig=None, ax=None, **kwargs) -> Tuple[Any, Any]:
         '''
         Plots a stackplot of the POS tag counts for each sentence in a book. 
         Note: works best with a Pandas dataframe with the columns as the POS tags and the rows as the sentences.
@@ -138,7 +143,7 @@ class CreativityBenchmark:
 
         ax.set(xbound=(0, df.shape[0]), ylim=(0, 1), title='Parts of Speech in Emma',
                xlabel='Sentence #', ylabel='Proportion of sentence')
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(
+        ax.xaxis.set_major_formatter(plt.FuncFormatter( # type: ignore
             lambda x, loc: f"{x/df.shape[0]:.0%}"))
 
         ax.legend()
@@ -175,10 +180,10 @@ class CreativityBenchmark:
 
     def avg_sentence_length(self):
         return sum(len(sentence) for sentence in self.sents)/len(self.sents)
-    
+
     def content_words(self):
         return (word for word in self.words if word not in self.stopwords)
-    
+
     def content_word_sentlevel(self):
         """Discards content words for words 
 
@@ -186,53 +191,163 @@ class CreativityBenchmark:
             list[list[str]]: A list of sentences containing the word tokens.
         """
         return [[word for word in sent if word not in self.stopwords] for sent in self.tokenized_sents]
-    
+
     def ncontent_word_sentlevel(self):
         return [len(sent) for sent in self.content_word_sentlevel()]
-    
+
     @staticmethod
-    def concreteness(word: str, concreteness_df: pd.DataFrame, pos: Optional[str] = None) -> float | None | Any:
-        """Returns the mean concreteness rating for a given word, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
+    def concreteness(data: str | list[str], concreteness_df: Optional[pd.DataFrame] = None) -> float | None | list[float|None]:
+        """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
         # TODO: Possibly look at amortized values given standard deviations
-        try:
-            return concreteness_df.loc[word.lower(),"Conc.M"]
-        except KeyError:
-            return None
+        if not concreteness_df:
+            concreteness_df = pd.read_csv('../data/concreteness.txt', sep="\t")
+            # concreteness_df.set_index("Word", inplace=True)
+            # concreteness_df.sort_index(inplace=True)
         
-    def report(self, print_time=True, print_report=True):
+        # Fastest way for lookups so far.
+        concreteness = dict(
+            zip(concreteness_df["Word"], concreteness_df["Conc.M"]))
+
+        if isinstance(data,str):
+            return concreteness.get(data.lower(), None)
+        if isinstance(data, list):
+            return [concreteness.get(w.lower(), None) for w in data if w not in CreativityBenchmark.stopwords]
+        raise TypeError(f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
+    
+    def calculate_sent_slopes(self, model, n) -> list[list[float]]:
+        # Returns slopes for the __words__ of the first `n` sentences of the `sents` list of sentences.
+        res = []
+        for sent in bench.tokenized_sents[:n]:
+            results = sent_predictions(sent, self, model)
+
+            res.append(
+                [slope_coefficient(
+                    np.arange(len(result)),
+                    result)
+                for result in results
+                if len(result) > 0]
+            )
+
+        return res
+    
+    @property
+    def model(self):
+        return self.model
+    
+    @property
+    def word2vec_model(self):
+        return self.word2vec_model
+
+    
+    def calculate_sim_scores(self, model, sim_function: Callable, max_sents=-1):
+        similarity_scores = []
+        for sent in self.tokenized_sents[:max_sents]:
+
+            probs, predictions = sent_predictions(
+                sent, self, model, return_tokens=True, k=10)
+            average_position_of_correct_prediction = 0
+            # number of predictions which do not include the true value in the topmost k results
+            missed_predictions = 0
+            # note that word here is a tuple of the word and its POS tag
+            i = 0
+            for (word, predlist) in predictions.items():
+                try:
+                    # print(word[0], predlist)
+                    average_position_of_correct_prediction += predlist.index(
+                        word[0])
+                    i += 1
+                except ValueError:
+                    missed_predictions += 1
+
+            # Avoid division by zero error
+            if i == 0:
+                average_position_of_correct_prediction = None
+            else:
+                average_position_of_correct_prediction /= i
+            similarity_scores.append(
+                (average_position_of_correct_prediction, missed_predictions))
+            break
+            #     for item in predlist:
+            # similarity_scores.append(
+            #     [[sim_function(word[0], pred) for pred in predlist] for word,predlist in predictions.items()]
+            # )
+
+        return similarity_scores
+
+
+    # def sim_func(word: str, pred: str) -> float | None:
+    #     """Arbitrary function to use when calculating vector similarity between the embeddings of two words. Serves as an example.
+
+    #     Parameters
+    #     ----------
+    #     word : str
+    #         Normally, the original (true) value.
+    #     pred : str
+    #         Normally, the predicted value.
+
+    #     Returns
+    #     -------
+    #     Optional[float]
+    #         Can return a float or None.
+    #     """
+    #     try:
+    #         return word2vec_model.similarity(word, pred)
+    #     except:
+    #         pass
+
+
+    def report(self, print_time=True, print_report=True, postag_distribution=False):
         """
             Generates a report for the text.
         """
+
+        stats = []
+        labels = []
+
         if print_time:
             time_now = time()
-        ncontent_words = self.ncontent_word_sentlevel()
-        avg_num_content_words = sum(ncontent_words)/ len(ncontent_words)
-        ratio_content_words = sum(ncontent_words) / len(self.words)
-        
-        concreteness_df = pd.read_csv('../data/concreteness.txt', sep="\t")
-        # concreteness_df.set_index("Word", inplace=True)
-        # concreteness_df.sort_index(inplace=True)
-        # Fastest way for lookups so far.
-        concreteness_df = dict(zip(concreteness_df["Word"], concreteness_df["Conc.M"]))
 
-        # concreteness = list(map(lambda word : self.concreteness(word, concreteness_df), self.words))
-        concreteness = list(concreteness_df.get(word.lower(), None) for word in self.words)
-        concreteness = [_ for _ in concreteness if _]
+        ncontent_words = self.ncontent_word_sentlevel()
+        avg_num_content_words = sum(ncontent_words) / len(ncontent_words)
+        ratio_content_words = sum(ncontent_words) / len(self.words)
+
+        concreteness = [_ for _ in self.concreteness(self.words) if _] # type: ignore
         concreteness_num = sum(concreteness) / len(concreteness)
-        
-        return_string = f"""Text (Title={self.title})
-    N words: \t {len(self.words)}
-    N sentences: \t {len(self.sents)}
-    Average word length: \t {self.avg_word_length():>9.3f}
-    Average sentence length: \t {self.avg_sentence_length():>9.3f}
-    Average number of tokens per sentence: \t {self.avg_tokens_per_sentence():.3f}
-    Average number of content words: \t {avg_num_content_words:.3f} (As proportion: {ratio_content_words:.3%})
-    Average concreteness score: \t {concreteness_num:.3f}
-    """
-    
+
+        stats.extend([len(self.words), len(self.sents), self.avg_word_length(), self.avg_sentence_length(
+        ), self.avg_tokens_per_sentence(), avg_num_content_words, ratio_content_words, concreteness_num])
+        labels.extend(["# words",
+                       "# sentences",
+                       "Mean word length",
+                       "Mean sent length",
+                       "Mean # tokens/sent",
+                       "Mean # content words",
+                       "Proportion of content words",
+                       "Mean concreteness score"])
+
+        if postag_distribution:
+
+            # The postagging takes a while
+            postag_counts = self.book_postag_counts()
+            total = sum(i for i in postag_counts.values())
+            ret = {"OTHER": 0.0}
+            for tag, val in postag_counts.items():
+                if tag in self.tags_of_interest:
+                    ret[tag] = val/total
+                else:
+                    ret["OTHER"] += val / total
+
+            stats.extend([val for val in ret.values()])
+            labels.extend(f"Distribution {key}" for key in ret.keys())
+
+        result = pd.Series(stats, index=labels)
+
+        return_string = f"""Text (Title={self.title}), \n{result.to_string(float_format=lambda x: f"{x:.2f}")}
+        """
+
         if print_time:
-            print(f"Report took ~{time() - time_now:.3f}s") # type: ignore
-            
+            print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore
+
         if print_report:
             print(return_string)
         else:
@@ -241,14 +356,15 @@ class CreativityBenchmark:
 
 if __name__ == "__main__":
     from nltk.corpus import gutenberg
-    
+
     bench = CreativityBenchmark(gutenberg.raw("austen-emma.txt"), "Emma")
     bench.report()
-    
+
     bench_2 = CreativityBenchmark(gutenberg.raw("bible-kjv.txt"), "Bible")
     bench_2.report()
-    
-    bench_3 = CreativityBenchmark(gutenberg.raw("carroll-alice.txt"), "Alice in Wonderland")
+
+    bench_3 = CreativityBenchmark(gutenberg.raw(
+        "carroll-alice.txt"), "Alice in Wonderland")
     bench_3.report()
     # print(report)
 
@@ -257,7 +373,6 @@ if __name__ == "__main__":
 
     # bench.plot_postag_distribution()
     # plt.show()
-
 
     # bench_2 = CreativityBenchmark(gutenberg.raw())
     # print(gutenberg.fileids())
