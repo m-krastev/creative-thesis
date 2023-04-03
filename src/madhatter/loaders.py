@@ -1,40 +1,95 @@
 """Provides the data loaders for the datasets that may be used in the pipelines."""
 
-import pathlib
+import tarfile
+from io import BytesIO
+from pathlib import Path
 
-import pandas as pd
-import requests
-from datasets.load import load_dataset
+from requests import get
 
-# Check if the file exists, otherwise download it
 
-cloze_train_path = pathlib.Path("./data/cloze_test_2018_train.csv")
-if not cloze_train_path.exists():
-    cloze_train_path.write_bytes(requests.get(
-        "https://goo.gl/0OYkPK", timeout=5).content)
+def ds_cloze(path="./data/cloze/") -> dict[str, Path]:
+    """Returns a dataset object for interacting with the cloze test dataset as extracted by XX
 
-cloze_val_path = pathlib.Path("./data/cloze_test_2018_val.csv")
-if not cloze_val_path.exists():
-    cloze_val_path.write_bytes(requests.get(
-        "https://goo.gl/XWjas1", timeout=5).content)
+    Parameters
+    ----------
+    path : str, optional
+        Default path for storing the files, by default "./data/cloze/"
 
-cloze_test_path = pathlib.Path("./data/cloze_test_2018_test.csv")
-if not cloze_test_path.exists():
-    cloze_test_path.write_bytes(requests.get(
-        "https://goo.gl/BcTtB4", timeout=5).content)
+    Returns
+    -------
+    dict[str,Path]
+        A dictionary object with the following structure:
+        ```
+        - split: path
+        ```
+        Where source is one of `[test, train, val]` and path is a Path object pointing to the csv file of the dataset.
 
-tiny_shakespeare_path = pathlib.Path("./data/tiny_shakespeare.txt")
-if not tiny_shakespeare_path.exists():
-    tiny_shakespeare_path.write_bytes(requests.get(
-        "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt", timeout=5).content)
+    Example Usage
+    -------
+    ```
+    import pandas as pd
 
-val_ds = pd.read_csv(cloze_val_path)
-# val_ds = load_dataset('csv', "val", data_files=cloze_val_path.__str__())
+    ds = ds_cloze()
+    df = pd.read_csv(ds["train"])
+    df.head()
+    ```
+    """
+    clozepath = Path(path)
 
-# tiny_shakespeare = load_dataset('tiny_shakespeare')
-with open(tiny_shakespeare_path, mode='r', encoding='utf8') as f:
-    tiny_shakespeare = f.read()
+    trainpath = clozepath / "cloze_train.csv"
+    testpath = clozepath / "cloze_test.csv"
+    valpath = clozepath / "cloze_test.csv"
+    if not clozepath.exists():
+        trainpath.write_bytes(get("https://goo.gl/0OYkPK", timeout=5).content)
 
-# Load the datasets later
-train_ds = load_dataset('csv', "train", data_files=cloze_train_path.__str__())
-test_ds = load_dataset('csv', "test", data_files=cloze_test_path.__str__())
+        testpath.write_bytes(get("https://goo.gl/BcTtB4", timeout=5).content)
+
+        valpath.write_bytes(get("https://goo.gl/XWjas1", timeout=5).content)
+
+    return {"test": trainpath, "train": trainpath, "val": valpath}
+
+
+def tiny_shakespeare(path="./data/tiny_shakespeare.txt"):
+    tiny_shakespeare_path = Path(path)
+    if not tiny_shakespeare_path.exists():
+        tiny_shakespeare_path.write_bytes(get(
+            "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt", timeout=5).content)
+
+    return tiny_shakespeare_path
+
+
+def ds_writingprompts(path="./data/writingPrompts/") -> dict[str, tuple[Path, Path]]:
+    """Returns a dataset object for interacting with the writing prompts dataset as extracted by Fan et al. (2015)
+
+    Returns
+    -------
+    dict[str, tuple[Path, Path]]
+        A dictionary object with the following structure:
+        ```
+        - split: (source, target)
+        ```
+        Where source is one of `[test, train, val]` and source and target are the "prompt" and "response(s)" files, respectively.
+
+    Example Usage
+    -------
+    ```
+    ds = ds_writingprompts()
+    with open(ds["train"][1]) as f:
+        f.read()
+    ```
+    """
+    wppath = Path(path)
+    if not wppath.exists():
+
+        file = tarfile.open(fileobj=BytesIO(get(
+            "https://dl.fbaipublicfiles.com/fairseq/data/writingPrompts.tar.gz", timeout=5).content))
+
+        file.extractall(wppath.parent)
+
+    return {"test": (wppath / "test.wp_source", wppath / "test.wptarget"),
+            "train": (wppath / "train.wp_source", wppath / "train.wp_target"),
+            "val": (wppath / "valid.wp_source", wppath / "valid.wp_target")}
+
+
+if __name__ == "__main__":
+    print("You should use the functions defined in the file, not run it directly!")
