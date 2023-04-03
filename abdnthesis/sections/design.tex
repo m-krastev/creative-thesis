@@ -1,0 +1,61 @@
+\chapter{Design}
+\label{chap:design}
+
+In the following section, we introduce concepts behind the design of the developed library and how those will be implemented in the application. We also discuss the technology choices we have made and the reasoning behind them. Furthermore, we take a look at how the application will be structured and how it will be distributed, and how the users will be able to interact with it via a command-line interface, or apply declared methods and classes inside their own applications. Finally, we discuss the delivery of a documentation and a user guide, as well as the testing and validation of the application.
+
+% We might want to consider the task in the context of software development as well
+\section{Functional Requirements}
+\subsection{Accuracy, etc.}
+
+
+
+
+% We might want to consider the task in the context of software development as well
+\section{Non-functional Requirements}
+The package henceforth needs to satisfy a list of viable non-functional requirements, which we will list below.
+\subsection{Efficacy}
+The implemented algorithms must be viable to deploy both in small-scale and for large-scale applications. This means that the algorithms must be able to scale to large amounts of data, while also being able to run on a single machine. In our case, a user should be able to quickly evaluate their texts across several metrics, however, as we also strive to apply this benchmark to large-scale corpora, we must also ensure that the algorithms are scalable.
+We will therefore not only seek to reiterate on the existing literature and implement the most promising algorithms for the task of creativity evaluation, but also optimize them for deployment on HPC clusters. 
+\subsection{Memory Requirements}
+The old adage that \textit{memory is cheap} is not entirely true. While it is true that memory is cheap, it is also true that memory is not free (\textit{and no, we cannot ``just download more RAM''}). In fact, some LLMs simply tend to be too large to reliably fit within the memory constraints of a personal computer. \mk{We should probably cite some sources here.} Furthermore, model accuracy tends to grow with the size of the neural network and the size of the used vocabulary. Naturally, we then need to seek a compromise on the size of the models we use, as we cannot:
+\begin{enumerate}
+    \item Use too large models during the research stage of the project, where we aim to process large corpora, evaluate the performance of the algorithms on them and make conclusions about the data. If we do aim to speed up this process, it is very likely that we would benefit from parallel computing --- but processing large sizes of text in parallel has a non-negligible likelihood of running out of allocated memory even on some HPC clusters.
+    \item Force users to run too large models on their personal computers, as this would be a very poor user experience. We do not plan to hardcode any models (large or small) in the application, however, the provided guides will reference certain smaller-scale pretrained LLMs. Naturally, we would provide a way for more experienced and more capable organizations or individuals to run larger models with minimal effort. 
+\end{enumerate} 
+
+\section{Technology Choices}
+\subsection{Python}
+We will be using Python version 3.10.X as shipped by the Anaconda software package. We are aware that Python 3.11 brings non-negligible optimizations and faster execution speed for some Python scripts, however, in light of the fact that the Anaconda distribution is still shipping Python 3.10.X, we will be using that version for the time being. We will be using the Anaconda distribution as it is a very popular and mature distribution of Python, which is also very easy to install and use. It also comes with a large number of pre-installed packages, which will be very useful for the current developer experience.
+
+
+\subsection{PyTorch}
+PyTorch ``is a machine learning framework based on the Torch library, used for applications such as computer vision and natural language processing, originally developed by Meta AI and now part of the Linux Foundation umbrella. It is free and open-source software released under the modified BSD licence'', as described by \cite{enwiki:1146375871}.
+
+Any models used in the application will be implemented in PyTorch, as it is a very popular framework for deep learning and natural language processing. It is also a very flexible framework, which allows for easy implementation of new models and algorithms. Furthermore, it is a very popular framework, which means that there is a large community of developers and researchers who have already implemented many of the algorithms we plan to use. This means that we can easily reuse their code and adapt it to our needs.
+\subsubsection*{\textbf{Comparison with TensorFlow}}
+\subsection{NLTK}
+NLTK is a key Python library for natural language processing, primarily built for education purposes and managed as an open-source software, built to be relatively modular and lightweight. Commonly used by researchers and students for understanding and implementing algorithms for NLP tasks, it is a relatively popular and mature framework with a healthy extension ecosystem, where contributors are able to write their own modules and share them with the community.  
+
+NLTK 
+\subsection{SpaCy}
+SpaCy is an open-source Python library for advanced natural language processing, designed to be easily used in production environments and implementing pipelines for enhanced NLP tasks. Whereas NLTK is primarily used for research and education, SpaCy is commonly being applied in industry environments. 
+
+\section{Code Style}
+\subsection{PEP8}
+We will be using PEP8\footnote{\url{https://peps.python.org/pep-0008}} \citep{pep8} as our code style guide. PEP8 is a style guide for Python code, which is maintained by the Python Software Foundation. It is a very popular, and comprehensive style guide, widely used by many Python developers and organizations. It covers a wide range of topics, including naming conventions, indentation, line length, whitespace, comments, ``docstrings'' (short for documentation strings, or, more specifically, comments that explain the way a given procedure or a class works, inside the code itself), and so on.
+\subsection{Docstrings}
+\subsection{Linting}
+\subsection{Testing}
+\subsection{Code Review}
+\subsection{Version Control}
+The outlined project 
+\subsubsection{Git and GitHub}
+
+\section{Documentation}
+\subsection{Documentation Framework}
+We use Sphinx in this household.
+\subsection{Sphinx}
+
+\subsection{Hosting}
+
+

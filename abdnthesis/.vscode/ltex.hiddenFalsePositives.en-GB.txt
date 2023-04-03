@@ -1,0 +1,2 @@
+{"rule":"SENTENCE_WHITESPACE","sentence":"^\\QX as shipped by the Anaconda software package.\\E$"}
+{"rule":"SENTENCE_WHITESPACE","sentence":"^\\QX, we will be using that version for the time being.\\E$"}

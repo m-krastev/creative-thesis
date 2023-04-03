@@ -7,22 +7,55 @@ Some introductory text on the purpose and uses of the datasets...
 The Brown Corpus \citep*{francis1979brown} is a widely used corpus in the field of computational linguistics, noted for the small variety of genres of literature it contains. The Corpus itself is founded on a compilation of American English literature from the year 1961. It is also small in terms of size, totalling around one million words, at least compared to modern corpora, which we also explore later on. The corpus also suffers from the issue of recency, as the works and language may be outdated for modern speakers of English.
 
 Of interest is the fact that the corpus has been manually tagged for parts of speech, a process that tends to be error-prone. %citation good
-As we will see later on, this fact has implications in terms of the supervised learning algorithms we implement for creativity evaluation. Still, we opt to utilise it primarily for prototyping purposes and drawing preliminary conclusions about the effectiveness of the implemented algorithms, rather than in-depth analysis and publication of results.
+As we will see later on, this fact has implications in terms of the supervised learning algorithms we implement for creativity evaluation. Still, we opt to utilize it primarily for prototyping purposes and drawing preliminary conclusions about the effectiveness of the implemented algorithms, rather than in-depth analysis and publication of results.
 
 \subsection{Project Gutenberg}
 Project Gutenberg\footnote[1]{\url{https://www.gutenberg.org/}} is a large collection of more than 50,000 works available in the public domain. The collection contains literature from various years and various genres and thus is suitable for training and evaluation of the developed benchmarks in the context of creativity study. 
 
-As the Project does not offer an easy to process copy of its collection, we turn to the work of \cite{DBLP:journals/corr/abs-1812-08092}. The team developed a catalogue for on-demand download of the entire set of books available on the Project Gutenberg website, intended for use in the study of computational linguistics. The tool avoids the overhead of writing a web-scraper or a manual parser for the downloadable collections of Project Gutenberg books made available by third parties, as well as enables easy synchronization of newly released literature. Instead, we are only required to develop a simple pipeline for the data to be fed into the utilised systems. 
+As the Project does not offer an easy to process copy of its collection, we turn to the work of \cite{DBLP:journals/corr/abs-1812-08092}. The team developed a catalogue for on-demand download of the entire set of books available on the Project Gutenberg website, intended for use in the study of computational linguistics. The tool avoids the overhead of writing a web-scraper or a manual parser for the downloadable collections of Project Gutenberg books made available by third parties, as well as enables easy synchronization of newly released literature. Instead, we are only required to develop a simple pipeline for the data to be fed into the utilized systems. 
 
 \subsection{Hierarchical Neural Story Generation}
-\cite{fan_hierarchical_2018} 
+In their work, \cite{fan_hierarchical_2018} trained a language model for text generation tasks on a dataset comprised of short stories submitted by multiple users given a particular premise (a prompt or a theme) by another user. \mk{Give an example for how one such short story would look like.} The dataset in question is technically referred to a series of posts and comments (threads) to them on the popular social media platform \textsc{Reddit}, and more tightly, the \textit{subreddit} forum \textsc{r/WritingPrompts}. The authors of the work \cite{fan_hierarchical_2018} have made the dataset available for public use, and we have used it for the purpose of evaluating the performance of our creativity benchmarks. As described by the authors on their GitHub page\footnote{\url{https://github.com/facebookresearch/fairseq/blob/main/examples/stories/README.md}}, the paper models the first 1000 tokens (words) of each story.
+
+\mk{How do we use this dataset? You should describe the process of how we use it. }
+
 \subsection{WordNet}
-WordNet\citep{wordnet1998fellbaum} is a lexical database of semantic relations between words that links words into semantic relations including synonyms, hyponyms, and meronyms. The synonyms are grouped into synsets with short definitions and usage examples. It can thus be seen as a combination and extension of a dictionary and thesaurus \citep{enwiki:1143619785}. 
+WordNet\citep{wordnet1998fellbaum} is a lexical database of semantic relations between words that links words into semantic relations including synonyms, hyponyms, and meronyms. The synonyms are grouped into sunsets with short definitions and usage examples. It can thus be seen as a combination and extension of a dictionary and thesaurus \citep{enwiki:1143619785}. 
 
 For our specific use cases, we have identified it as a valuable resource in terms of relational representation of words in semantic space. In the given context, this enables us to traverse a semantic graph for synonyms and related words for the goal of enriching potential similarity between the set of creative parts of speech (i.e., nouns, adjectives, adverbs), which we narrow down our scope to in particular. 
 % this sounds a bit weird
 % insert potential uses
-\subsection{Word2Vec}
+\subsection{Numerical representations of semantic tokens}
+\mk{Potentially move this section to background work}
+The idea of representing words or lexical tokens as numerical vectors (or even scalars) is hardly new. 
+For example the SimLex-999 dataset \citep*{hill-etal-2015-simlex} gives values on a scale from 0 to 10, like the examples below, which range from near-synonyms (vanish, disappear) to pairs that scarcely seem to have anything in common (hole, agreement):
+
+\begin{table}[htbp]
+    \centering
+        \begin{tabular}{llc}
+            \toprule
+            word1 & word2 & score \\
+            \midrule
+            vanish & disappear & 9.8 \\
+            hole & agreement & 1.2 \\
+            \bottomrule
+       \end{tabular}
+    \caption{Example Simlex-999 pairs}
+    \label{simlex2pairs}
+\end{table}
+
+
+Early work on affective meaning by \cite{osgood1957measurement} found that words varied along three important dimensions of affective meaning:
+\begin{itemize}
+    \item valence: the pleasantness of the stimulus
+    \item arousal: the intensity of emotion provoked by the stimulus
+    \item dominance: the degree of control exerted by the stimulus
+\end{itemize}
+
+\cite{osgood1957measurement} noticed that in using these 3 numbers to represent the meaning of a word, the model was representing each word as a point in a three-dimensional space, a vector whose three dimensions corresponded to the word’s rating on the three scales. This revolutionary idea that word meaning could be represented as a point in space (e.g., that part of the meaning of heartbreak can be represented as the point $[2.45,5.65,3.58]$) was the first expression of the vector semantics models that we introduce next. \mk{**You can paraphrase this**}
+
+\subsection*{Word2Vec}
+
 \citet*{mikolov_word2vec_2013} show in their work that words may be represented as dense vectors in $N$-dimensional space, and we can perform mathematical operations on them that may yield effective results in terms of word representation. 
 
 \subsection*{Measuring distance in vector representations of semantic tokens}
@@ -48,15 +81,7 @@ $$ \text{Distance}(v,w) = 1 - \text{Similarity}(v,w) $$
 
 The cosine distance may prove useful when dealing with minimisation problems as is often the case with machine learning.
 
+
+
+
 \section{Metrics}
-
-% We might want to consider the task in the context of software development as well
-\section{Functional Requirements}
-
-
-% We might want to consider the task in the context of software development as well
-\section{Non-functional Requirements}
-
-\begin{itemize}
-    \item 
-\end{itemize}

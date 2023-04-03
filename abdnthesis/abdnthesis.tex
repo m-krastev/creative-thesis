@@ -21,6 +21,7 @@
 \setlength{\bibsep}{0pt}
 \bibliographystyle{apalike}
 \usepackage{hyperref}
+\usepackage{booktabs}
 
 \usepackage[T1]{fontenc}
 
@@ -96,12 +97,13 @@
 
 \include{sections/introduction}
 % \include{faq}
-% \include{literature-survey}
+\include{sections/background.tex}
 \include{sections/methods.tex}
-% \include{implementation}
-% \include{evaluation}
-% \include{discussion}
-% \include{conclusion}
+\include{sections/design.tex}
+\include{sections/implementation.tex}
+\include{sections/evaluation.tex}
+\include{sections/discussion.tex}
+% \include{sections/conclusion}
 
 \appendix
 % \include{proof}

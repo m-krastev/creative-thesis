@@ -2,7 +2,7 @@
 
 # pylint: disable=missing-function-docstring, invalid-name
 from time import time
-from typing import Any, Callable, Generator, Optional, Tuple
+from typing import Any, Callable, Generator, Optional, Tuple, NamedTuple
 
 import matplotlib.pyplot as plt
 import nltk
@@ -10,10 +10,20 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.interpolate import make_interp_spline
-from utils import mean, slope_coefficient
-from models import sent_predictions
+from .utils import get_concreteness_df, mean, slope_coefficient
+from .models import sent_predictions
 
 sns.set_theme()
+
+class Report(NamedTuple):
+    title: Optional[str] = None
+    nwords: Optional[int] = None
+    mean_wl: Optional[float] = None
+    mean_sl: Optional[float] = None
+    mean_tokenspersent: Optional[float] = None
+    prop_contentwords: Optional[float] = None
+    mean_conc: Optional[float] = None
+    prop_pos: Optional[dict] = None
 
 
 class CreativityBenchmark:
@@ -34,11 +44,13 @@ class CreativityBenchmark:
         self.sents = nltk.sent_tokenize(self.raw_text)
         self.tokenized_sents = [
             nltk.word_tokenize(sent) for sent in self.sents]
+        
+        self.tagset = tagset
+        self.tagged_sents = nltk.pos_tag_sents(self.tokenized_sents, tagset=self.tagset)
         # self.sents = [nltk.word_tokenize(sent) for sent in self.sents]
 
         # Initialize a list to hold the POS tag counts for each sentence
         self.postag_counts: list[nltk.FreqDist] = []
-        self.tagset = tagset
         self.title = title
 
     def ngrams(self, n, **kwargs):
@@ -52,7 +64,7 @@ class CreativityBenchmark:
         else:
             self.tagset = tagset
             # Collect POS data for each sentence
-            for sentence in nltk.pos_tag_sents(self.tokenized_sents, tagset=tagset):
+            for sentence in self.tagged_sents:
                 # Initialize a counter for the POS tags on the sentence level
                 lib = nltk.FreqDist()
                 for _, token in sentence:
@@ -197,13 +209,9 @@ class CreativityBenchmark:
         return [len(sent) for sent in self.content_word_sentlevel()]
 
     @staticmethod
-    def concreteness(data: str | list[str], concreteness_df: Optional[pd.DataFrame] = None) -> float | None | list[float | None]:
+    def concreteness(data: str | list[str], concreteness_df: pd.DataFrame) -> float | None | list[float | None]:
         """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
         # TODO: Possibly look at amortized values given standard deviations
-        if not concreteness_df:
-            concreteness_df = pd.read_csv('../data/concreteness.txt', sep="\t")
-            # concreteness_df.set_index("Word", inplace=True)
-            # concreteness_df.sort_index(inplace=True)
 
         # Fastest way for lookups so far.
         concreteness = dict(
@@ -219,7 +227,7 @@ class CreativityBenchmark:
     def calculate_sent_slopes(self, model, n) -> list[list[float]]:
         # Returns slopes for the __words__ of the first `n` sentences of the `sents` list of sentences.
         res = []
-        for sent in bench.tokenized_sents[:n]:
+        for sent in self.tokenized_sents[:n]:
             results = sent_predictions(sent, self, model)
 
             res.append(
@@ -295,82 +303,44 @@ class CreativityBenchmark:
     #     except:
     #         pass
 
-    def report(self, print_time=True, print_report=True, postag_distribution=False) -> pd.Series | None:
+    def report(self, print_time=True, postag_distribution=False) -> Report:
         """
             Generates a report for the text.
         """
 
-        stats = []
-        labels = []
+        postag_dist = {}
+        concreteness_num = 0.0
 
         if print_time:
             time_now = time()
 
         ncontent_words = self.ncontent_word_sentlevel()
-        avg_num_content_words = sum(ncontent_words) / len(ncontent_words)
+        # avg_num_content_words = mean(ncontent_words)
         ratio_content_words = sum(ncontent_words) / len(self.words)
 
-        concreteness = [_ for _ in self.concreteness(
-            self.words) if _]  # type: ignore
-        concreteness_num = sum(concreteness) / len(concreteness)
+        conc_df = get_concreteness_df()
 
-        stats.extend([len(self.words), len(self.sents), self.avg_word_length(), self.avg_sentence_length(
-        ), self.avg_tokens_per_sentence(), avg_num_content_words, ratio_content_words, concreteness_num])
-        labels.extend(["# words",
-                       "# sentences",
-                       "Mean word length",
-                       "Mean sent length",
-                       "Mean # tokens/sent",
-                       "Mean # content words",
-                       "Proportion of content words",
-                       "Mean concreteness score"])
+        concreteness = [_ for _ in self.concreteness(
+            self.words, conc_df) if _]  # type: ignore
+        concreteness_num = mean(concreteness)
 
         if postag_distribution:
 
             # The postagging takes a while
             postag_counts = self.book_postag_counts()
             total = sum(i for i in postag_counts.values())
-            ret = {"OTHER": 0.0}
+            postag_dist = {"OTHER": 0.0}
             for tag, val in postag_counts.items():
                 if tag in self.tags_of_interest:
-                    ret[tag] = val/total
+                    postag_dist[tag] = val/total
                 else:
-                    ret["OTHER"] += val / total
+                    postag_dist["OTHER"] += val / total
 
-            stats.extend([val for val in ret.values()])
-            labels.extend(f"Ratio {key}" for key in ret.keys())
 
-        result = pd.Series(stats, index=labels)
+        result = Report(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(), self.avg_tokens_per_sentence(), ratio_content_words, concreteness_num, postag_dist)
 
         if print_time:
             print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore
 
-        if print_report:
-            return_string = f"""Text (Title={self.title}), \n{result.to_string(float_format=lambda x: f"{x:.2f}")}"""
-            print(return_string)
-        else:
-            return result
+        return result
 
-
-if __name__ == "__main__":
-    from nltk.corpus import gutenberg
-
-    bench = CreativityBenchmark(gutenberg.raw("austen-emma.txt"), "Emma")
-    bench.report()
-
-    bench_2 = CreativityBenchmark(gutenberg.raw("bible-kjv.txt"), "Bible")
-    bench_2.report()
-
-    bench_3 = CreativityBenchmark(gutenberg.raw(
-        "carroll-alice.txt"), "Alice in Wonderland")
-    bench_3.report()
-    # print(report)
-
-    # bench.plot_transition_matrix()
-    # plt.show()
-
-    # bench.plot_postag_distribution()
-    # plt.show()
-
-    # bench_2 = CreativityBenchmark(gutenberg.raw())
-    # print(gutenberg.fileids())

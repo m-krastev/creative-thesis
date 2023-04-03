@@ -9,7 +9,9 @@ import numpy as np
 
 
 def sent_predictions(sent: str | list[str], bench: Any, model: Any, return_tokens: bool = False, k: int = 20):
-    """Returns predictions for content words in a given sentence. If return_tokens is true, returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, corresponding to the likekihoods in the first list.
+    """Returns predictions for content words in a given sentence. If return_tokens is true, 
+    returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, 
+    corresponding to the likekihoods in the first list.
 
     Parameters
     ----------
@@ -76,10 +78,12 @@ def predict_tokens(sent: str, masked_word: str, model, return_tokens: bool = Fal
     masked_word: str
         The word to predict tokens for. Note that this word must be in the sentence.
     model
-        Must be a masked language model that takes in a sentence and returns a tensor of logits for each token in the sentence. Default assumes a pretrained BERT model from the HuggingFace `transformers` library.
+        Must be a masked language model that takes in a sentence and returns a tensor of logits for each token
+        in the sentence. Default assumes a pretrained BERT model from the HuggingFace `transformers` library.
     word2vec_model
         Must be a word2vec model that takes in a word and returns a vector representation of the word.
-        Default is `gensim.models.keyedvectors.KeyedVectors` loaded from the `word2vec_sample` model from the `nltk_data` package.
+        Default is `gensim.models.keyedvectors.KeyedVectors` loaded from the `word2vec_sample` model 
+        from the `nltk_data` package.
     k: int
         The number of tokens to return.    
 
@@ -128,10 +132,12 @@ def predict_tokens(sent: str, masked_word: str, model, return_tokens: bool = Fal
         return ret, tokens
     else:
         return ret
+    
+    
+if __name__ == '__main__':
 
+    word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(
+        str(find('models/word2vec_sample/pruned.word2vec.txt')), binary=False)
 
-word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(
-    str(find('models/word2vec_sample/pruned.word2vec.txt')), binary=False)
-
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-model = BertForMaskedLM.from_pretrained("bert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    model = BertForMaskedLM.from_pretrained("bert-base-uncased")
