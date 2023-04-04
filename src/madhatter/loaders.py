@@ -7,13 +7,13 @@ from pathlib import Path
 from requests import get
 
 
-def ds_cloze(path="./data/cloze/") -> dict[str, Path]:
+def ds_cloze(path="./data") -> dict[str, Path]:
     """Returns a dataset object for interacting with the cloze test dataset as extracted by XX
 
     Parameters
     ----------
     path : str, optional
-        Default path for storing the files, by default "./data/cloze/"
+        Default path for storing the files, by default "./data/"
 
     Returns
     -------
@@ -34,7 +34,7 @@ def ds_cloze(path="./data/cloze/") -> dict[str, Path]:
     df.head()
     ```
     """
-    clozepath = Path(path)
+    clozepath = Path(path) / "cloze/"
 
     trainpath = clozepath / "cloze_train.csv"
     testpath = clozepath / "cloze_test.csv"
@@ -49,8 +49,8 @@ def ds_cloze(path="./data/cloze/") -> dict[str, Path]:
     return {"test": trainpath, "train": trainpath, "val": valpath}
 
 
-def tiny_shakespeare(path="./data/tiny_shakespeare.txt"):
-    tiny_shakespeare_path = Path(path)
+def tiny_shakespeare(path="./data/"):
+    tiny_shakespeare_path = Path(path) / "tiny_shakespeare.txt"
     if not tiny_shakespeare_path.exists():
         tiny_shakespeare_path.write_bytes(get(
             "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt", timeout=5).content)
@@ -58,7 +58,7 @@ def tiny_shakespeare(path="./data/tiny_shakespeare.txt"):
     return tiny_shakespeare_path
 
 
-def ds_writingprompts(path="./data/writingPrompts/") -> dict[str, tuple[Path, Path]]:
+def ds_writingprompts(path="./data/") -> dict[str, tuple[Path, Path]]:
     """Returns a dataset object for interacting with the writing prompts dataset as extracted by Fan et al. (2015)
 
     Returns
@@ -78,7 +78,7 @@ def ds_writingprompts(path="./data/writingPrompts/") -> dict[str, tuple[Path, Pa
         f.read()
     ```
     """
-    wppath = Path(path)
+    wppath = Path(path) / "writingPrompts/"
     if not wppath.exists():
 
         file = tarfile.open(fileobj=BytesIO(get(
@@ -90,6 +90,14 @@ def ds_writingprompts(path="./data/writingPrompts/") -> dict[str, tuple[Path, Pa
             "train": (wppath / "train.wp_source", wppath / "train.wp_target"),
             "val": (wppath / "valid.wp_source", wppath / "valid.wp_target")}
 
+
+def ds_dgt(path = "./data/"):
+    ds_path = Path(path) / "dgt_acquis.txt"
+    if not ds_path.exists():
+        ds_path.write_bytes(get(
+            "https://wt-public.emm4u.eu/Resources/DGT-Acquis-2012/data.en.txt.zip", timeout=5).content)
+
+    return ds_path
 
 if __name__ == "__main__":
     print("You should use the functions defined in the file, not run it directly!")

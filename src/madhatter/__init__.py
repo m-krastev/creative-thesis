@@ -3,11 +3,9 @@
 """
 
 from madhatter.benchmark import CreativityBenchmark
+from madhatter.models import *
 
-
-def main():
-    """Main function
-    """
+if __name__ == "__main__":
     from nltk.corpus import gutenberg
 
     bench = CreativityBenchmark(gutenberg.raw("austen-emma.txt"), "Emma")
@@ -29,7 +27,3 @@ def main():
 
     # bench_2 = CreativityBenchmark(gutenberg.raw())
     # print(gutenberg.fileids())
-
-
-if __name__ == "__main__":
-    main()

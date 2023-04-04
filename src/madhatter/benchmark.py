@@ -343,4 +343,3 @@ class CreativityBenchmark:
             print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore
 
         return result
-
