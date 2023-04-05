@@ -2,7 +2,7 @@
     Main class
 """
 
-from madhatter.benchmark import CreativityBenchmark
+from madhatter.benchmark import *
 from madhatter.models import *
 
 if __name__ == "__main__":

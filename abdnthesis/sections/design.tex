@@ -33,12 +33,28 @@ PyTorch ``is a machine learning framework based on the Torch library, used for a
 
 Any models used in the application will be implemented in PyTorch, as it is a very popular framework for deep learning and natural language processing. It is also a very flexible framework, which allows for easy implementation of new models and algorithms. Furthermore, it is a very popular framework, which means that there is a large community of developers and researchers who have already implemented many of the algorithms we plan to use. This means that we can easily reuse their code and adapt it to our needs.
 \subsubsection*{\textbf{Comparison with TensorFlow}}
-\subsection{NLTK}
+\subsection{NLP Frameworks}
+\subsection*{NLTK}
 NLTK is a key Python library for natural language processing, primarily built for education purposes and managed as an open-source software, built to be relatively modular and lightweight. Commonly used by researchers and students for understanding and implementing algorithms for NLP tasks, it is a relatively popular and mature framework with a healthy extension ecosystem, where contributors are able to write their own modules and share them with the community.  
 
 NLTK 
-\subsection{SpaCy}
+\subsection*{SpaCy}
 SpaCy is an open-source Python library for advanced natural language processing, designed to be easily used in production environments and implementing pipelines for enhanced NLP tasks. Whereas NLTK is primarily used for research and education, SpaCy is commonly being applied in industry environments. 
+
+\subsection*{Comparison between NLTK and SpaCy}
+\begin{table}[htbp]
+    \centering
+        \begin{tabular}{lrr}
+            \toprule
+            Framework  &  Peak Memory  &     Increment \\
+            \midrule
+                SpaCy  &  5089.13 MiB  &   4465.29 MiB \\
+            Mad Hatter &  434.81 MiB   &     48.75 MiB \\
+            \bottomrule
+            \end{tabular}
+    \caption{<caption>}
+    \label{<label>}
+\end{table}
 
 \section{Code Style}
 \subsection{PEP8}

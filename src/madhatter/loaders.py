@@ -1,6 +1,8 @@
 """Provides the data loaders for the datasets that may be used in the pipelines."""
 
 import tarfile
+import zipfile
+
 from io import BytesIO
 from pathlib import Path
 
@@ -50,7 +52,7 @@ def ds_cloze(path="./data") -> dict[str, Path]:
 
 
 def tiny_shakespeare(path="./data/"):
-    tiny_shakespeare_path = Path(path) / "tiny_shakespeare.txt"
+    tiny_shakespeare_path = Path(path) / "tiny_shakespeare" / "tiny_shakespeare.txt"
     if not tiny_shakespeare_path.exists():
         tiny_shakespeare_path.write_bytes(get(
             "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt", timeout=5).content)
@@ -84,18 +86,31 @@ def ds_writingprompts(path="./data/") -> dict[str, tuple[Path, Path]]:
         file = tarfile.open(fileobj=BytesIO(get(
             "https://dl.fbaipublicfiles.com/fairseq/data/writingPrompts.tar.gz", timeout=5).content))
 
-        file.extractall(wppath.parent)
+        file.extractall(wppath.parent.parent)
 
     return {"test": (wppath / "test.wp_source", wppath / "test.wptarget"),
             "train": (wppath / "train.wp_source", wppath / "train.wp_target"),
             "val": (wppath / "valid.wp_source", wppath / "valid.wp_target")}
 
 
-def ds_dgt(path = "./data/"):
-    ds_path = Path(path) / "dgt_acquis.txt"
+def ds_dgt(path = "./data/") -> Path:
+    """Returns the DGT-Acquis dataset offered by the European Union, etc.
+
+    Parameters
+    ----------
+    path : str, optional
+        Path to the data directory, by default "./data/"
+
+    Returns
+    -------
+    Path
+        A path reference for the available file that can be loaded next.
+    """
+    ds_path = Path(path) / "dgt" / "data.en.txt"
     if not ds_path.exists():
-        ds_path.write_bytes(get(
-            "https://wt-public.emm4u.eu/Resources/DGT-Acquis-2012/data.en.txt.zip", timeout=5).content)
+        with zipfile.ZipFile(BytesIO(get(
+            "https://wt-public.emm4u.eu/Resources/DGT-Acquis-2012/data.en.txt.zip", timeout=5).content)) as file:
+            file.extractall(ds_path.parent)
 
     return ds_path
 
