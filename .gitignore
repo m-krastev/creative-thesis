@@ -467,3 +467,7 @@ gutenberg/metadata/**
 # Don't synchronize the data directory
 src/data
 src/plots
+
+src/madhatter/static/**
+
+mprofile**

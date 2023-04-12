@@ -19,8 +19,15 @@ In their work, \cite{fan_hierarchical_2018} trained a language model for text ge
 
 \mk{How do we use this dataset? You should describe the process of how we use it. }
 
-\subsection{WordNet}
-WordNet\citep{wordnet1998fellbaum} is a lexical database of semantic relations between words that links words into semantic relations including synonyms, hyponyms, and meronyms. The synonyms are grouped into sunsets with short definitions and usage examples. It can thus be seen as a combination and extension of a dictionary and thesaurus \citep{enwiki:1143619785}. 
+\subsection*{Discarded Datasets and Corpora}
+Some datasets were considered, however, discarded due to: not being deemed applicable for the context of the application; general lack of availability of the dataset in a form that is easily accessible for our purposes; simply being infeasible to use due to the size of the dataset and the hardware constraints imposed on the project; or other reasons of similar nature.
+
+\subsubsection*{The COCA}
+The Corpus of Contemporary American English (COCA)\footnote[2]{\url{https://www.english-corpora.org/coca/}} is a large corpus of American English, containing nearly 1 billion words of text from contemporary sources. It is a collection of texts from a variety of genres, including fiction, non-fiction, and academic writing. The corpus offers a variety of tools for analysis of the data, including a concordance tool, a word frequency list, and a collocation finder. Naturally, many of those tools could be used in the field of statistical creativity analysis that we explore.
+
+The corpus does offer limited access to the full API, as well as free samples of the data, however, the full corpus is not available for free, and the cost of acquiring it is prohibitive for the limitations set forward by the project. Nevertheless, the corpus is a valuable resource for the field of computational linguistics, and we would like to explore it further given less constraints.
+\section{WordNet}
+WordNet\citep{wordnet1998fellbaum} is a lexical database of semantic relations between words that links words into semantic relations including synonyms, hyponyms, and meronyms. The synonyms are grouped into synsets (sets of synonyms) with short definitions and usage examples. It can thus be seen as a combination and extension of a dictionary and thesaurus \citep{enwiki:1143619785}. 
 
 For our specific use cases, we have identified it as a valuable resource in terms of relational representation of words in semantic space. In the given context, this enables us to traverse a semantic graph for synonyms and related words for the goal of enriching potential similarity between the set of creative parts of speech (i.e., nouns, adjectives, adverbs), which we narrow down our scope to in particular. 
 % this sounds a bit weird

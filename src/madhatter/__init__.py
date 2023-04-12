@@ -2,8 +2,9 @@
     Main class
 """
 
-from madhatter.benchmark import *
-from madhatter.models import *
+from .benchmark import *
+from .models import *
+from .utils import *
 
 if __name__ == "__main__":
     from nltk.corpus import gutenberg

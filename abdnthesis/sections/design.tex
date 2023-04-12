@@ -1,19 +1,36 @@
 \chapter{Design}
 \label{chap:design}
 
-In the following section, we introduce concepts behind the design of the developed library and how those will be implemented in the application. We also discuss the technology choices we have made and the reasoning behind them. Furthermore, we take a look at how the application will be structured and how it will be distributed, and how the users will be able to interact with it via a command-line interface, or apply declared methods and classes inside their own applications. Finally, we discuss the delivery of a documentation and a user guide, as well as the testing and validation of the application.
+In the following chapter, we introduce concepts behind the design of the developed library and how those will be implemented in the application. We also discuss the technology choices we have made and the reasoning behind them. Furthermore, we take a look at how the application will be structured and how it will be distributed, and how the users will be able to interact with it via a command-line interface, or apply declared methods and classes inside their own applications. Finally, we discuss the delivery of a documentation and a user guide, as well as the testing and validation of the application.
 
 % We might want to consider the task in the context of software development as well
-\section{Functional Requirements}
-\subsection{Accuracy, etc.}
+\section{Requirements}
+In this section, we detail the requirements regarding the application and the library in the following sections. We will also discuss the requirements regarding the documentation and the user guide, as well as the requirements regarding the testing and validation of the application.
+
+\subsection{Scenarios}
+We use scenarios to better illustrate the use-cases of the \textsc{Mad Hatter} package. They provide a frame for the functional and non-functional requirements and allow us to nail down the specific requirements and pain points, well in advance of the de facto launch of the package.
+
+\begin{enumerate}
+    \item Evaluating linguistic features associated with creative aspects of language in a given text. Users should be able to clearly present a text and evaluate it against a set of metrics, which will then be presented in a clear and concise manner.
+    \item Providing methods for interacting, plotting and visualizing the results of the evaluation. Users should be able to easily interact with the results of the evaluation, and plot them in a way that is easy to understand and interpret.
+    \item Providing a pipeline for batch data analysis to be used in larger-scale linguistic research operations. Users should be able to easily process large amounts of data in a batch manner, and then interact with the results of the evaluation in a way that is easy to understand and interpret.
+\end{enumerate}
+
+\subsection{Functional Requirements}
+Functional requirements pinpoint the specific tasks that the application needs to be able to perform. They are the most important part of the requirements, as they are the ones that will be used to evaluate the success of the application. We will list the functional requirements below.
+\subsubsection{Accuracy, etc.}
+
+\begin{enumerate}
+    \item 
+\end{enumerate}
 
 
 
 
 % We might want to consider the task in the context of software development as well
-\section{Non-functional Requirements}
+\subsection{Non-functional Requirements}
 The package henceforth needs to satisfy a list of viable non-functional requirements, which we will list below.
-\subsection{Efficacy}
+\subsubsection{Efficacy}
 The implemented algorithms must be viable to deploy both in small-scale and for large-scale applications. This means that the algorithms must be able to scale to large amounts of data, while also being able to run on a single machine. In our case, a user should be able to quickly evaluate their texts across several metrics, however, as we also strive to apply this benchmark to large-scale corpora, we must also ensure that the algorithms are scalable.
 We will therefore not only seek to reiterate on the existing literature and implement the most promising algorithms for the task of creativity evaluation, but also optimize them for deployment on HPC clusters. 
 \subsection{Memory Requirements}

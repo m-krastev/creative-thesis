@@ -40,19 +40,22 @@ def ds_cloze(path="./data") -> dict[str, Path]:
 
     trainpath = clozepath / "cloze_train.csv"
     testpath = clozepath / "cloze_test.csv"
-    valpath = clozepath / "cloze_test.csv"
+    valpath = clozepath / "cloze_val.csv"
     if not clozepath.exists():
+        clozepath.mkdir(exist_ok=True)
         trainpath.write_bytes(get("https://goo.gl/0OYkPK", timeout=5).content)
 
         testpath.write_bytes(get("https://goo.gl/BcTtB4", timeout=5).content)
 
         valpath.write_bytes(get("https://goo.gl/XWjas1", timeout=5).content)
 
-    return {"test": trainpath, "train": trainpath, "val": valpath}
+    return {"test": testpath, "train": trainpath, "val": valpath}
 
 
 def tiny_shakespeare(path="./data/"):
-    tiny_shakespeare_path = Path(path) / "tiny_shakespeare" / "tiny_shakespeare.txt"
+    """p """
+    tiny_shakespeare_path = Path(
+        path) / "tiny_shakespeare" / "tiny_shakespeare.txt"
     if not tiny_shakespeare_path.exists():
         tiny_shakespeare_path.write_bytes(get(
             "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt", timeout=5).content)
@@ -93,7 +96,7 @@ def ds_writingprompts(path="./data/") -> dict[str, tuple[Path, Path]]:
             "val": (wppath / "valid.wp_source", wppath / "valid.wp_target")}
 
 
-def ds_dgt(path = "./data/") -> Path:
+def ds_dgt(path="./data/") -> Path:
     """Returns the DGT-Acquis dataset offered by the European Union, etc.
 
     Parameters
@@ -109,10 +112,39 @@ def ds_dgt(path = "./data/") -> Path:
     ds_path = Path(path) / "dgt" / "data.en.txt"
     if not ds_path.exists():
         with zipfile.ZipFile(BytesIO(get(
-            "https://wt-public.emm4u.eu/Resources/DGT-Acquis-2012/data.en.txt.zip", timeout=5).content)) as file:
+                "https://wt-public.emm4u.eu/Resources/DGT-Acquis-2012/data.en.txt.zip", timeout=5).content)) as file:
             file.extractall(ds_path.parent)
 
     return ds_path
+
+
+def load_imageability() -> Path:
+    """
+    Loads the imageability dataset from Cortese et al. (2004) and returns the path to the file.
+    """
+
+    im_path = Path(__package__) / "static" / \
+        "imageability" / "cortese20004norms.csv"
+
+    if not im_path.exists():
+        with zipfile.ZipFile(BytesIO(get(r'https://static-content.springer.com/esm/art%3A10.3758%2FBF03195585/MediaObjects/Cortese-BRM-2004.zip', timeout=5).content)) as file:
+            file.extractall(im_path.parent)
+
+        for file in im_path.parent.glob('**/*'):
+            file.rename(im_path.parent / file.name)
+
+        # (im_path.parent / "Cortese-BRMIC-2004").rmdir()
+    return im_path
+
+def load_concreteness() -> Path:
+    conc_path = Path(__package__) / "static" / \
+        "concreteness" / "concreteness.csv"
+
+    if not conc_path.exists():
+        conc_path.parent.mkdir(exist_ok=True, parents=True)
+        conc_path.write_bytes(get(r'http://crr.ugent.be/papers/Concreteness_ratings_Brysbaert_et_al_BRM.txt', timeout=5).content)
+
+    return conc_path
 
 if __name__ == "__main__":
     print("You should use the functions defined in the file, not run it directly!")

@@ -1,28 +1,42 @@
 """Main Class for the Application Logic"""
 
 # pylint: disable=missing-function-docstring, invalid-name
+from itertools import chain
 from time import time
-from typing import Any, Callable, Generator, Optional, Tuple, NamedTuple
+from typing import Any, Callable, Generator, NamedTuple, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import nltk
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from nltk.corpus import wordnet as wn
+from nltk.stem import WordNetLemmatizer
 from scipy.interpolate import make_interp_spline
-from .utils import get_concreteness_df, mean, slope_coefficient
+
 from .models import sent_predictions
+from .utils import (get_concreteness_df, get_imageability_df, imageability,
+                    mean, slope_coefficient, stopwords)
 
 sns.set_theme()
 
+tag_to_wn = {
+    "NOUN": wn.NOUN,
+    "VERB": wn.VERB,
+    "ADJ": wn.ADJ,
+    "ADV": wn.ADV
+}
+
+
 class Report(NamedTuple):
-    title: Optional[str] = None
+    title: str
     nwords: Optional[int] = None
     mean_wl: Optional[float] = None
     mean_sl: Optional[float] = None
     mean_tokenspersent: Optional[float] = None
     prop_contentwords: Optional[float] = None
     mean_conc: Optional[float] = None
+    mean_img: Optional[float] = None
     prop_pos: Optional[dict] = None
 
 
@@ -32,11 +46,11 @@ class CreativityBenchmark:
     """
 
     plots_folder = 'plots/'
+    # TODO: change the tagset to be benchmark-tied
     tags = set(nltk.tag.mapping._UNIVERSAL_TAGS)  # type: ignore
     tags_of_interest = set(['NOUN', 'VERB', 'ADJ'])  # ignore 'ADV'
     tag_to_embed = {tag: i for i, tag in enumerate(tags)}
     embed_to_tag = {i: tag for i, tag in enumerate(tags)}
-    stopwords = set(nltk.corpus.stopwords.words('english'))
 
     def __init__(self, raw_text: str, title: str = "unknown", tagset: str = 'universal'):
         self.raw_text = raw_text
@@ -44,9 +58,10 @@ class CreativityBenchmark:
         self.sents = nltk.sent_tokenize(self.raw_text)
         self.tokenized_sents = [
             nltk.word_tokenize(sent) for sent in self.sents]
-        
+
         self.tagset = tagset
-        self.tagged_sents = nltk.pos_tag_sents(self.tokenized_sents, tagset=self.tagset)
+        self.tagged_sents = nltk.pos_tag_sents(
+            self.tokenized_sents, tagset=self.tagset)
         # self.sents = [nltk.word_tokenize(sent) for sent in self.sents]
 
         # Initialize a list to hold the POS tag counts for each sentence
@@ -74,9 +89,8 @@ class CreativityBenchmark:
 
             return self.postag_counts
 
-    @property
     def tagged_words(self):
-        return nltk.pos_tag(self.words, tagset=self.tagset)
+        return list(chain.from_iterable(self.tagged_sents))
 
     def book_postag_counts(self, tagset: Optional[str] = None) -> nltk.FreqDist:
         """Get a counter object for the Parts of Speech in the whole book."""
@@ -195,7 +209,7 @@ class CreativityBenchmark:
         return sum(len(sentence) for sentence in self.sents)/len(self.sents)
 
     def content_words(self):
-        return (word for word in self.words if word not in self.stopwords)
+        return (word for word in self.words if word not in stopwords)
 
     def content_word_sentlevel(self):
         """Discards content words for words 
@@ -203,7 +217,7 @@ class CreativityBenchmark:
         Returns:
             list[list[str]]: A list of sentences containing the word tokens.
         """
-        return [[word for word in sent if word not in self.stopwords] for sent in self.tokenized_sents]
+        return [[word for word in sent if word not in stopwords] for sent in self.tokenized_sents]
 
     def ncontent_word_sentlevel(self):
         return [len(sent) for sent in self.content_word_sentlevel()]
@@ -212,6 +226,7 @@ class CreativityBenchmark:
     def concreteness(data: str | list[str], concreteness_df: pd.DataFrame) -> float | None | list[float | None]:
         """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
         # TODO: Possibly look at amortized values given standard deviations
+        # MAJOR TODO: Implement lemmatization
 
         # Fastest way for lookups so far.
         concreteness = dict(
@@ -220,7 +235,7 @@ class CreativityBenchmark:
         if isinstance(data, str):
             return concreteness.get(data.lower(), None)
         if isinstance(data, list):
-            return [concreteness.get(w.lower(), None) for w in data if w not in CreativityBenchmark.stopwords]
+            return [concreteness.get(w.lower(), None) for w in data if w not in stopwords]
         raise TypeError(
             f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
 
@@ -302,11 +317,23 @@ class CreativityBenchmark:
     #         return word2vec_model.similarity(word, pred)
     #     except:
     #         pass
+    def sent_lemmas(self) -> list[list[str]]:
+        lemmatizer = WordNetLemmatizer()
+        return [
+            [lemmatizer.lemmatize(word, tag_to_wn[tag]) for word, tag in sent if tag in tag_to_wn] for sent in self.tagged_sents
+        ]
+
+    def lemmas(self) -> list[str]:
+        lemmatizer = WordNetLemmatizer()
+        return [
+            lemmatizer.lemmatize(word, tag_to_wn[tag]) for sent in self.tagged_sents for word, tag in sent if tag in tag_to_wn
+        ]
 
     def report(self, print_time=True, postag_distribution=False) -> Report:
         """
             Generates a report for the text.
         """
+        lemmas = self.lemmas()
 
         postag_dist = {}
         concreteness_num = 0.0
@@ -321,23 +348,24 @@ class CreativityBenchmark:
         conc_df = get_concreteness_df()
 
         concreteness = [_ for _ in self.concreteness(
-            self.words, conc_df) if _]  # type: ignore
+            lemmas, conc_df) if _]  # type: ignore
         concreteness_num = mean(concreteness)
+
+        imageability_df = get_imageability_df()
+        image = [_ for _ in imageability(
+            lemmas, imageability_df) if _]  # type: ignore
+        image_num = mean(image)
 
         if postag_distribution:
 
             # The postagging takes a while
             postag_counts = self.book_postag_counts()
             total = sum(i for i in postag_counts.values())
-            postag_dist = {"OTHER": 0.0}
-            for tag, val in postag_counts.items():
-                if tag in self.tags_of_interest:
-                    postag_dist[tag] = val/total
-                else:
-                    postag_dist["OTHER"] += val / total
+            postag_dist = {tag: val/total for tag,
+                           val in postag_counts.items() if tag in self.tags_of_interest}
 
-
-        result = Report(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(), self.avg_tokens_per_sentence(), ratio_content_words, concreteness_num, postag_dist)
+        result = Report(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(
+        ), self.avg_tokens_per_sentence(), ratio_content_words, concreteness_num, image_num, postag_dist)
 
         if print_time:
             print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore

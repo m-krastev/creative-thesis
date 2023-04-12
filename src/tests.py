@@ -7,34 +7,38 @@ from madhatter.benchmark import CreativityBenchmark
 
 # %%
 files = [gutenberg.raw(fileid)[:100_000] for fileid in gutenberg.fileids()]
-files = files*30
+# files = files * 30
 
-# nlp = spacy.load("en_core_web_sm", disable=[
-#                  "ner", 
-#                 #  "lemmatizer", 
-#                  "textcat", "attribute_ruler"])
+nlp = spacy.load("en_core_web_sm", disable=[
+                 "ner", 
+                #  "lemmatizer", 
+                 "textcat", "attribute_ruler"])
 
 
+# def process(file):
+#     bench = CreativityBenchmark(file)
+#     sent = bench.tagged_sents[0]
+#     for tup in sent:
+#         pass
+#     del bench
+    
 def process(file):
-    bench = CreativityBenchmark(file)
-    sent = bench.tagged_sents[0]
-    for tup in sent:
-        pass
-    del bench
+    bench = nlp(file)
+    list(bench.sents)[0]
 
 if __name__ == '__main__':
-    # docs = nlp.pipe(files, n_process=8)
-    # for doc in docs:
-    #     # gc.collect()
-    #     sent = list(doc.sents)[0]
-    #     for token in sent:
-    #         # print(token.text, token.tag_, token.pos_, token.dep_, token.is_stop)
-    #         pass
+    docs = nlp.pipe(files, n_process=16)
+    for doc in docs:
+        # gc.collect()
+        sent = list(doc.sents)[0]
+        # for token in sent:
+        #     # print(token.text, token.tag_, token.pos_, token.dep_, token.is_stop)
+        #     pass
 
-    import multiprocessing as mp
+    # import multiprocessing as mp
     
-    with mp.Pool(8) as p:
-        l = p.map(process, files)
+    # with mp.Pool(16) as p:
+    #     l = p.map(process, files)
 
 
 
