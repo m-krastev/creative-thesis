@@ -6,6 +6,12 @@ from .benchmark import *
 from .models import *
 from .utils import *
 
+from .loaders import load_concreteness, load_freq, load_imageability
+
+load_freq()
+load_concreteness()
+load_imageability()
+
 if __name__ == "__main__":
     from nltk.corpus import gutenberg
 

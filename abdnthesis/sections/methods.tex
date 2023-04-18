@@ -1,8 +1,12 @@
 \chapter{Methodology}
 \label{chap:methods}
 
+In this chapter, we explore the different datasets to be used, the methods for evaluating creativity, and the algorithms for creativity evaluation. We will furthermore discuss the strengths and limitations of the proposed methods and algorithms, including time complexity, memory constraints, and the accuracy of the results. We take an informed approach to the selection of the datasets and the methods for evaluating creativity, and discuss the reasons for our choices in detail, and support them with relevant literature as explored by other researchers in the field.
+
 \section{Datasets}
-Some introductory text on the purpose and uses of the datasets...
+\label{sec:datasets}
+Datasets are vital for the success of any given project in the field of machine learning, and even more so when concerning linguistics. As evidenced by \cite{torralba_unbiased_2011}, the quality of the data used for training a model has a direct impact on the quality of the results. A model trained on a specific dataset, e.g. a corpus of law documents, can be expected to perform poorly on a dataset of medical documents, as the two domains are inherently different. Thus, we take particular care in planning and selecting the datasets we use. We also consider ease of use and access, as some datasets may require additional processing, others are subject to availability issues (e.g. paid datasets and corpora), and some may be too large to be used in a reasonable amount of time.
+In this section, we will explore the datasets used in this project, and discuss their strengths and limitations.
 \subsection{Brown Corpus}
 The Brown Corpus \citep*{francis1979brown} is a widely used corpus in the field of computational linguistics, noted for the small variety of genres of literature it contains. The Corpus itself is founded on a compilation of American English literature from the year 1961. It is also small in terms of size, totalling around one million words, at least compared to modern corpora, which we also explore later on. The corpus also suffers from the issue of recency, as the works and language may be outdated for modern speakers of English.
 

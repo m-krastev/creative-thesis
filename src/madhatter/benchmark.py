@@ -15,18 +15,19 @@ from nltk.stem import WordNetLemmatizer
 from scipy.interpolate import make_interp_spline
 
 from .models import sent_predictions
-from .utils import (get_concreteness_df, get_imageability_df, imageability,
+from .utils import (_ratings, get_concreteness_df, get_freq_df, get_imageability_df, imageability,
                     mean, slope_coefficient, stopwords)
 
 sns.set_theme()
 
-tag_to_wn = {
+TAG_TO_WN = {
     "NOUN": wn.NOUN,
     "VERB": wn.VERB,
     "ADJ": wn.ADJ,
     "ADV": wn.ADV
 }
 
+TAGS_OF_INTEREST = {'NOUN', 'VERB', 'ADJ'}  # ignore 'ADV'
 
 class Report(NamedTuple):
     title: str
@@ -37,6 +38,7 @@ class Report(NamedTuple):
     prop_contentwords: Optional[float] = None
     mean_conc: Optional[float] = None
     mean_img: Optional[float] = None
+    mean_freq: Optional[float] = None
     prop_pos: Optional[dict] = None
 
 
@@ -320,14 +322,18 @@ class CreativityBenchmark:
     def sent_lemmas(self) -> list[list[str]]:
         lemmatizer = WordNetLemmatizer()
         return [
-            [lemmatizer.lemmatize(word, tag_to_wn[tag]) for word, tag in sent if tag in tag_to_wn] for sent in self.tagged_sents
+            [lemmatizer.lemmatize(word, TAG_TO_WN[tag]) for word, tag in sent if tag in TAG_TO_WN] for sent in self.tagged_sents
         ]
 
     def lemmas(self) -> list[str]:
         lemmatizer = WordNetLemmatizer()
         return [
-            lemmatizer.lemmatize(word, tag_to_wn[tag]) for sent in self.tagged_sents for word, tag in sent if tag in tag_to_wn
+            lemmatizer.lemmatize(word, TAG_TO_WN[tag]) for sent in self.tagged_sents for word, tag in sent if tag in TAG_TO_WN
         ]
+        
+    def frequency_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
+        return _ratings(self.lemmas(), get_freq_df("dict")) if lemmas is None else _ratings(lemmas, get_freq_df("dict"))# type: ignore
+
 
     def report(self, print_time=True, postag_distribution=False) -> Report:
         """
@@ -356,6 +362,9 @@ class CreativityBenchmark:
             lemmas, imageability_df) if _]  # type: ignore
         image_num = mean(image)
 
+        freq = [_ for _ in self.frequency_ratings(lemmas) if _]
+        freq_num = mean(freq)
+
         if postag_distribution:
 
             # The postagging takes a while
@@ -365,7 +374,7 @@ class CreativityBenchmark:
                            val in postag_counts.items() if tag in self.tags_of_interest}
 
         result = Report(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(
-        ), self.avg_tokens_per_sentence(), ratio_content_words, concreteness_num, image_num, postag_dist)
+        ), self.avg_tokens_per_sentence(), ratio_content_words, concreteness_num, image_num, freq_num, postag_dist)
 
         if print_time:
             print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore

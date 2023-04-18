@@ -146,5 +146,22 @@ def load_concreteness() -> Path:
 
     return conc_path
 
+def load_freq() -> Path:
+    """_summary_
+
+    Returns
+    -------
+    Path
+        _description_
+    """
+    freq_path = Path(__package__) / "static" / \
+        "frequency" / "frequency.csv"
+
+    if not freq_path.exists():
+        freq_path.parent.mkdir(exist_ok=True, parents=True)
+        freq_path.write_bytes(get(r'https://ucrel.lancs.ac.uk/bncfreq/lists/1_1_all_alpha.txt', timeout=5).content)
+
+    return freq_path
+
 if __name__ == "__main__":
     print("You should use the functions defined in the file, not run it directly!")
