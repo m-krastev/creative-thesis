@@ -32,20 +32,23 @@ def slope_coefficient(one: ntp.NDArray, two: ntp.NDArray) -> float:
     return ((one*two).mean(axis=0) - one.mean()*two.mean(axis=0)) / ((one**2).mean() - (one.mean())**2)
 
 
-def get_concreteness_df() -> pd.DataFrame:
+def get_concreteness_df(_format: Literal['df','dict'] ="df") -> pd.DataFrame | dict:
     # load_concreteness()
-    return pd.read_csv(BytesIO(pkgutil.get_data(__package__, 'static/concreteness/concreteness.csv')), sep="\t") # type: ignore
-
+    dataframe = pd.read_csv(BytesIO(pkgutil.get_data(__package__, 'static/concreteness/concreteness.csv')), sep="\t") # type: ignore
     # concreteness_df = concreteness_df.set_index("Word").sort_index()
 
+    return dataframe if _format == "df" else dict(
+        zip(dataframe["Word"], dataframe["Conc.M"]))
 
-def get_imageability_df(format="df") -> pd.DataFrame | dict:
+
+
+def get_imageability_df(_format="df") -> pd.DataFrame | dict:
     """Returns a table of the imageability of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
 
     # load_imageability()
     # Dicts are the fastest way to make string accesses
     dataframe = pd.read_csv(BytesIO(pkgutil.get_data(__package__, "static/imageability/cortese2004norms.csv")), header=9) # type: ignore
-    return dataframe if format == "df" else dict(
+    return dataframe if _format == "df" else dict(
         zip(dataframe["item"], dataframe["rating"]))
 
 
@@ -60,7 +63,7 @@ def imageability(data: str | list[str], imageability_df: pd.DataFrame) -> Option
 
     return _ratings(data, dictionary)
 
-def _ratings(data: str | list[str], func: dict) -> float | None | list[float | None]:
+def _ratings(data, func: dict):
     """j"""
 
     if isinstance(data, str):
@@ -72,7 +75,7 @@ def _ratings(data: str | list[str], func: dict) -> float | None | list[float | N
         f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
 
 
-def get_freq_df(_format: Literal["df"] | Literal["dict"] = "df") -> pd.DataFrame | dict:
+def get_freq_df(_format) -> pd.DataFrame | dict:
     '''
     Key:
     
@@ -133,3 +136,14 @@ def frequency_ratings(data):
     df_dict = get_freq_df("dict")  # 6652 entries
 
     return _ratings(data, df_dict) # type: ignore
+
+
+def concreteness(data: str | list[str], concreteness_df: pd.DataFrame) -> float | None | list[float | None]:
+    """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
+    # TODO: Possibly look at amortized values given standard deviations
+
+    # Fastest way for lookups so far.
+    conc = dict(
+        zip(concreteness_df["Word"], concreteness_df["Conc.M"]))
+
+    return _ratings(data, conc)

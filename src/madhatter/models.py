@@ -1,14 +1,14 @@
+"""models.py
+Base file for LLM operations on text.
+"""
+
 # Initialize models
 from typing import Any
 import torch
-from transformers import AutoTokenizer, BertForMaskedLM
-import gensim
-from nltk.data import find
 import nltk
-import numpy as np
 
 
-def sent_predictions(sent: str | list[str], bench: Any, model: Any, return_tokens: bool = False, k: int = 20):
+def sent_predictions(sent: str | list[str], bench: Any, model: Any, tokenizer: Any, return_tokens: bool = False, k: int = 20):
     """Returns predictions for content words in a given sentence. If return_tokens is true, 
     returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, 
     corresponding to the likekihoods in the first list.
@@ -49,24 +49,26 @@ def sent_predictions(sent: str | list[str], bench: Any, model: Any, return_token
             continue
 
         if return_tokens is True:
-            predicted_tokens, predicted_words = predict_tokens(
-                sent, word, model, return_tokens=return_tokens, k=k)
+            toks = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=return_tokens, k=k)
+            predicted_tokens = [_[0] for _ in toks]
+            predicted_words = [_[1] for _ in toks]
 
             results.append(predicted_tokens)
             return_words[(word, tag)] = predicted_words
         else:
             predicted_tokens = predict_tokens(
-                sent, word, model, return_tokens=return_tokens, k=k)
+                sent, word, model, tokenizer, return_tokens=return_tokens, k=k)
             results.append(predicted_tokens)
 
     if return_tokens is True:
 
-        return [np.array(result) for result in results], return_words
+        return results, return_words
     else:
-        return [np.array(result) for result in results]
+        return results
 
 
-def predict_tokens(sent: str, masked_word: str, model, return_tokens: bool = False, k: int = 20):
+def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: bool = False, k: int = 20):
     """Predict the top k tokens that could replace the masked word in the sentence. 
 
     Returns a list of tuples of the form (token, likelihood, similarity) where similarity is the cosine similarity of the given words in a word2vec model.
@@ -111,11 +113,9 @@ def predict_tokens(sent: str, masked_word: str, model, return_tokens: bool = Fal
     mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[
         0].nonzero(as_tuple=True)[0]
 
-    vals, predicted_token_ids = torch.topk(
-        logits[0, mask_token_index], k, dim=-1)
+    vals, predicted_token_ids = torch.topk(logits[0, mask_token_index], k, dim=-1) # pylint: disable=no-member
 
     ret = []
-    tokens = []
     for i, predicted_token_id in enumerate(predicted_token_ids[0]):
         # if the actual tokens are needed, return those as well
         if return_tokens is True:
@@ -125,19 +125,8 @@ def predict_tokens(sent: str, masked_word: str, model, return_tokens: bool = Fal
             if word.startswith("##"):
                 word = masked_word+word[2:]
 
-            tokens.append(word)
-        ret.append(vals[0, i].item())
+            ret.append((word, vals[0, i].item()))
+        else:
+            ret.append(vals[0,i].item())
 
-    if return_tokens is True:
-        return ret, tokens
-    else:
-        return ret
-    
-    
-if __name__ == '__main__':
-
-    word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(
-        str(find('models/word2vec_sample/pruned.word2vec.txt')), binary=False)
-
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-    model = BertForMaskedLM.from_pretrained("bert-base-uncased")
+    return ret

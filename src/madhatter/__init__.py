@@ -24,6 +24,7 @@ if __name__ == "__main__":
     bench_3 = CreativityBenchmark(gutenberg.raw(
         "carroll-alice.txt"), "Alice in Wonderland")
     bench_3.report()
+
     # print(report)
 
     # bench.plot_transition_matrix()

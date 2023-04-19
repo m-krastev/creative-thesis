@@ -15,8 +15,7 @@ from nltk.stem import WordNetLemmatizer
 from scipy.interpolate import make_interp_spline
 
 from .models import sent_predictions
-from .utils import (_ratings, get_concreteness_df, get_freq_df, get_imageability_df, imageability,
-                    mean, slope_coefficient, stopwords)
+from .utils import (_ratings, get_concreteness_df, get_freq_df, get_imageability_df, mean, slope_coefficient, stopwords)
 
 sns.set_theme()
 
@@ -30,6 +29,8 @@ TAG_TO_WN = {
 TAGS_OF_INTEREST = {'NOUN', 'VERB', 'ADJ'}  # ignore 'ADV'
 
 class Report(NamedTuple):
+    """Report object
+    """
     title: str
     nwords: Optional[int] = None
     mean_wl: Optional[float] = None
@@ -49,7 +50,7 @@ class CreativityBenchmark:
 
     plots_folder = 'plots/'
     # TODO: change the tagset to be benchmark-tied
-    tags = set(nltk.tag.mapping._UNIVERSAL_TAGS)  # type: ignore
+    tags = {'.', 'ADJ', 'ADP', 'ADV', 'CONJ', 'DET', 'NOUN', 'NUM', 'PRON', 'PRT', 'VERB', 'X'}
     tags_of_interest = set(['NOUN', 'VERB', 'ADJ'])  # ignore 'ADV'
     tag_to_embed = {tag: i for i, tag in enumerate(tags)}
     embed_to_tag = {i: tag for i, tag in enumerate(tags)}
@@ -224,33 +225,17 @@ class CreativityBenchmark:
     def ncontent_word_sentlevel(self):
         return [len(sent) for sent in self.content_word_sentlevel()]
 
-    @staticmethod
-    def concreteness(data: str | list[str], concreteness_df: pd.DataFrame) -> float | None | list[float | None]:
-        """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
-        # TODO: Possibly look at amortized values given standard deviations
-        # MAJOR TODO: Implement lemmatization
 
-        # Fastest way for lookups so far.
-        concreteness = dict(
-            zip(concreteness_df["Word"], concreteness_df["Conc.M"]))
-
-        if isinstance(data, str):
-            return concreteness.get(data.lower(), None)
-        if isinstance(data, list):
-            return [concreteness.get(w.lower(), None) for w in data if w not in stopwords]
-        raise TypeError(
-            f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
-
-    def calculate_sent_slopes(self, model, n) -> list[list[float]]:
+    def calculate_sent_slopes(self, model, tokenizer, n) -> list[list[float]]:
         # Returns slopes for the __words__ of the first `n` sentences of the `sents` list of sentences.
         res = []
         for sent in self.tokenized_sents[:n]:
-            results = sent_predictions(sent, self, model)
+            results = sent_predictions(sent, self, model, tokenizer, return_tokens=False)
 
             res.append(
                 [slope_coefficient(
                     np.arange(len(result)),
-                    result)
+                    np.array(result))
                  for result in results
                  if len(result) > 0]
             )
@@ -265,12 +250,12 @@ class CreativityBenchmark:
     def word2vec_model(self):
         return self.word2vec_model
 
-    def calculate_sim_scores(self, model, sim_function: Callable, max_sents=-1):
+    def calculate_sim_scores(self, model, tokenizer, sim_function: Callable, max_sents=-1):
         similarity_scores = []
         for sent in self.tokenized_sents[:max_sents]:
 
             probs, predictions = sent_predictions(
-                sent, self, model, return_tokens=True, k=10)
+                sent, self, model, tokenizer, return_tokens=True, k=10)
             average_position_of_correct_prediction = 0
             # number of predictions which do not include the true value in the topmost k results
             missed_predictions = 0
@@ -287,7 +272,7 @@ class CreativityBenchmark:
 
             # Avoid division by zero error
             if i == 0:
-                average_position_of_correct_prediction = None
+                average_position_of_correct_prediction = 0
             else:
                 average_position_of_correct_prediction /= i
             similarity_scores.append(
@@ -330,9 +315,15 @@ class CreativityBenchmark:
         return [
             lemmatizer.lemmatize(word, TAG_TO_WN[tag]) for sent in self.tagged_sents for word, tag in sent if tag in TAG_TO_WN
         ]
-        
+
     def frequency_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
-        return _ratings(self.lemmas(), get_freq_df("dict")) if lemmas is None else _ratings(lemmas, get_freq_df("dict"))# type: ignore
+        return _ratings(self.lemmas(), get_freq_df("dict")) if lemmas is None else _ratings(lemmas, get_freq_df("dict"))
+
+    def concreteness_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
+        return _ratings(self.lemmas(), get_concreteness_df("dict")) if lemmas is None else _ratings(lemmas, get_concreteness_df("dict"))
+    
+    def imageability_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
+        return _ratings(self.lemmas(), get_imageability_df("dict")) if lemmas is None else _ratings(lemmas, get_imageability_df("dict"))
 
 
     def report(self, print_time=True, postag_distribution=False) -> Report:
@@ -342,24 +333,17 @@ class CreativityBenchmark:
         lemmas = self.lemmas()
 
         postag_dist = {}
-        concreteness_num = 0.0
 
-        if print_time:
-            time_now = time()
+        time_now = time() if print_time is True else 0.0
 
         ncontent_words = self.ncontent_word_sentlevel()
         # avg_num_content_words = mean(ncontent_words)
         ratio_content_words = sum(ncontent_words) / len(self.words)
 
-        conc_df = get_concreteness_df()
+        conc = [_ for _ in self.concreteness_ratings(lemmas) if _]
+        conc_num = mean(conc)
 
-        concreteness = [_ for _ in self.concreteness(
-            lemmas, conc_df) if _]  # type: ignore
-        concreteness_num = mean(concreteness)
-
-        imageability_df = get_imageability_df()
-        image = [_ for _ in imageability(
-            lemmas, imageability_df) if _]  # type: ignore
+        image = [_ for _ in self.imageability_ratings(lemmas) if _]
         image_num = mean(image)
 
         freq = [_ for _ in self.frequency_ratings(lemmas) if _]
@@ -374,9 +358,9 @@ class CreativityBenchmark:
                            val in postag_counts.items() if tag in self.tags_of_interest}
 
         result = Report(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(
-        ), self.avg_tokens_per_sentence(), ratio_content_words, concreteness_num, image_num, freq_num, postag_dist)
+        ), self.avg_tokens_per_sentence(), ratio_content_words, conc_num, image_num, freq_num, postag_dist)
 
-        if print_time:
-            print(f"Report took ~{time() - time_now:.3f}s")  # type: ignore
+        if print_time is True:
+            print(f"Report took ~{time() - time_now:.3f}s")
 
         return result
