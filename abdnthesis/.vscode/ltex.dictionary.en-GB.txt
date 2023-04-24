@@ -4,3 +4,4 @@ docstrings
 WritingPrompts
 Krastev
 SpaCy
+PoS

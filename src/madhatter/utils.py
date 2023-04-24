@@ -107,10 +107,10 @@ def get_freq_df(_format) -> pd.DataFrame | dict:
     df_freq = df_freq.loc[df_freq["Word"] != '@']
 
     # replace the PoS tags with the ones we are using
-    def replace_df(df, column, replacements) -> pd.DataFrame:
+    def replace_df(_df, column, replacements) -> pd.DataFrame:
         for src, tar in replacements:
-            df.loc[df[column].str.contains(src), column] = tar
-        return df
+            _df.loc[_df[column].str.contains(src), column] = tar
+        return _df
 
     replacements = [("No", "NOUN"), ("Adv", "ADV"),
                     ("Adj", "ADJ"), ("Verb", "VERB")]

@@ -91,7 +91,7 @@ def ds_writingprompts(path="./data/") -> dict[str, tuple[Path, Path]]:
 
         file.extractall(wppath.parent.parent)
 
-    return {"test": (wppath / "test.wp_source", wppath / "test.wptarget"),
+    return {"test": (wppath / "test.wp_source", wppath / "test.wp_target"),
             "train": (wppath / "train.wp_source", wppath / "train.wp_target"),
             "val": (wppath / "valid.wp_source", wppath / "valid.wp_target")}
 
@@ -162,6 +162,29 @@ def load_freq() -> Path:
         freq_path.write_bytes(get(r'https://ucrel.lancs.ac.uk/bncfreq/lists/1_1_all_alpha.txt', timeout=5).content)
 
     return freq_path
+
+def read_texts(path: Path | str, length: int = 1_000_000) -> list[str]:
+    """Returns a list of strings sequentially read from the path specified as the option. 
+
+    Parameters
+    ----------
+    path : Path
+        Path to read from. The document will be opened in text-mode.
+    length : int, optional
+        The desired length of all texts, by default 1_000_000
+
+    Returns
+    -------
+    list[str]
+        List of the read character sequences.
+    """
+    with open(path) as f:
+        text = []
+        line = f.read(length)
+        while len(line) > 0:
+            text.append(line)
+            line = f.read(length)
+    return text
 
 if __name__ == "__main__":
     print("You should use the functions defined in the file, not run it directly!")

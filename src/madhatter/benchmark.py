@@ -4,6 +4,7 @@
 from itertools import chain
 from time import time
 from typing import Any, Callable, Generator, NamedTuple, Optional, Tuple
+from attr import asdict
 
 import matplotlib.pyplot as plt
 import nltk
@@ -42,6 +43,9 @@ class Report(NamedTuple):
     mean_freq: Optional[float] = None
     prop_pos: Optional[dict] = None
 
+    def __str__(self):
+        newline = "\n\t"
+        return f"Report({newline.join(f'{_[0]}={_[1]}' for _ in (self._asdict().items()))})" # pylint: disable=no-member
 
 class CreativityBenchmark:
     """
