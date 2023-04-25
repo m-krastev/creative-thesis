@@ -5,3 +5,4 @@ WritingPrompts
 Krastev
 SpaCy
 PoS
+tagset

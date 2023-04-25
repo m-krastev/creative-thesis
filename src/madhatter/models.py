@@ -3,98 +3,33 @@ Base file for LLM operations on text.
 """
 
 # Initialize models
-from typing import Any, Literal
+from typing import Any, Literal, NamedTuple
 
 import nltk
 import torch
 
 
-def sent_predictions(sent: str | list[str], bench: Any, model: Any, tokenizer: Any, return_tokens: Literal[True,False] = False, k: int = 20):
-    """Returns predictions for content words in a given sentence. If return_tokens is true, 
-    returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, 
-    corresponding to the likekihoods in the first list.
+class Prediction(NamedTuple):
+    """Prediction class. Contains:
+    ```
+    word: str
+    original_tag: str
+    suggestions: tuple[str]
+    probs: tuple[float]
+    ```
     """
-    if isinstance(sent, str):
-        tokens = nltk.word_tokenize(sent.lower())
-    elif isinstance(sent, list):
-        tokens = [token.lower() for token in sent]
-        sent = " ".join(tokens)
-    else:
-        raise TypeError()
-    words = nltk.pos_tag(tokens, tagset='universal')
+    word: str
+    original_tag: str
+    suggestions: tuple[str]
+    probs: tuple[float]
 
-    results = []
-    return_words = {}
-
-    # loop over the words of the sentence
-    for word, tag in words:
-        # Early stopping
-        if word in bench.stopwords or tag not in bench.tags_of_interest:
-            continue
-
-        if return_tokens is True:
-            toks = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=True, k=k)
-            predicted_tokens = [_[0] for _ in toks]
-            predicted_words = [_[1] for _ in toks]
-
-            results.append(predicted_tokens)
-            return_words[(word, tag)] = predicted_words
-        else:
-            predicted_tokens = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=return_tokens, k=k)
-            results.append(predicted_tokens)
+    def __bool__(self):
+        return len(self.suggestions) == len(self.probs)
 
 
-    return results, return_words if return_tokens is True else results
-
-def sliding_window_preds(sent: str | list[str], bench: Any, model: Any, tokenizer: Any, return_tokens: bool = False, k: int = 20, n: int = 30):
-    """Returns predictions for content words in a given sliding window of length n=30. If return_tokens is true, 
-    returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, 
-    corresponding to the likekihoods in the first list.
+def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: bool = False, max_preds: int = 20) -> list[float] | list[tuple[str, float]]:
     """
-    if isinstance(sent, str):
-        tokens = nltk.word_tokenize(sent.lower())
-    elif isinstance(sent, list):
-        tokens = [token.lower() for token in sent]
-        sent = " ".join(tokens)
-    else:
-        raise TypeError()
-
-    # TODO: Implement a second function working with already postagged sents
-    words = nltk.pos_tag(tokens, tagset='universal')
-
-    if len(tokens) < n:
-        raise ValueError(f'The given window ({len(tokens)=}) contains less tokens than the requested sliding window({n=}); ')
-    results = []
-    return_words = {}
-
-
-    # for i in range(len(words)):
-        # for j in range(n)
-
-    # loop over the words of the sentence
-    for word, tag in words:
-        # Early stopping
-        if tag not in bench.tags_of_interest or word in bench.stopwords:
-            continue
-
-        if return_tokens is True:
-            toks = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=return_tokens, k=k)
-            predicted_tokens, predicted_words = list(zip(*toks))
-
-            results.append(predicted_tokens)
-            return_words[(word, tag)] = predicted_words
-        else:
-            predicted_tokens = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=return_tokens, k=k)
-            results.append(predicted_tokens)
-
-    return results, return_words if return_tokens is True else results
-
-def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: bool = False, k: int = 20) -> list[float]|list[tuple[str,float]]:
-    """Predict the top k tokens that could replace the masked word in the sentence. 
+    Predict the top k tokens that could replace the masked word in the sentence. 
 
     Returns a list of tuples of the form (token, likelihood, similarity) where similarity is the cosine similarity of the given words in a word2vec model.
 
@@ -116,14 +51,12 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
 
     Returns
     -------
-    List of tuples the form (token, likelihood, similarity)
+    List of tuples the form (token, likelihood)
 
     token: str
         The predicted token.
     likelihood: float
         The likelihood of the token being the masked word.
-    similarity: float
-        The cosine similarity of the token and the masked word.
     """
     if masked_word not in sent:
         raise ValueError(f"{masked_word} not in {sent}")
@@ -138,7 +71,8 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
     mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[
         0].nonzero(as_tuple=True)[0]
 
-    vals, predicted_token_ids = torch.topk(logits[0, mask_token_index], k, dim=-1) # pylint: disable=no-member
+    vals, predicted_token_ids = torch.topk(
+        logits[0, mask_token_index], max_preds, dim=-1)  # pylint: disable=no-member
 
     ret = []
     for i, predicted_token_id in enumerate(predicted_token_ids[0]):
@@ -151,6 +85,144 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
 
             ret.append((word, vals[0, i].item()))
         else:
-            ret.append(vals[0,i].item())
+            ret.append(vals[0, i].item())
 
     return ret
+
+
+def sent_predictions(sent: str | list[str], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, stopwords: set | None = None, tags_of_interest: set | None = None):
+    """Returns predictions for content words in a given sentence. If return_tokens is true, 
+    returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, 
+    corresponding to the likekihoods in the first list.
+    """
+    if isinstance(sent, str):
+        tokens = nltk.word_tokenize(sent.lower())
+    elif isinstance(sent, list):
+        tokens = [token.lower() for token in sent]
+        sent = " ".join(tokens)
+    else:
+        raise TypeError()
+    words = nltk.pos_tag(tokens, tagset='universal')
+
+    results = []
+
+    if stopwords is None:
+        stopwords = set()
+
+    if tags_of_interest is None:
+        tags_of_interest = set()
+
+    # loop over the words of the sentence
+    for word, tag in words:
+        # Early stopping
+        if word in stopwords or tag not in tags_of_interest:
+            continue
+
+        if return_tokens is True:
+            toks = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=True, max_preds=k)
+            predicted_words, predicted_tokens = list(zip(*toks))
+
+            results.append(Prediction(
+                word, tag, predicted_words, predicted_tokens))  # type: ignore
+        else:
+            predicted_tokens = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=k)
+            results.append(Prediction(
+                word, tag, [], predicted_tokens))  # type: ignore
+
+    return results
+
+
+def sliding_window_preds_tagged(words: list[tuple[str, str]], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, max_preds: int = 10, stopwords: set | None = None, tags_of_interest: set | None = None) -> list[Prediction]:
+    """
+        Note: must be used in conjunction with a list of tuples with already tagged words.
+    """
+    if not isinstance(words, list):
+        raise ValueError(
+            "Incorrect values passed for `words`, expected a list of tuples")
+
+    if stopwords is None:
+        stopwords = set()
+
+    if tags_of_interest is None:
+        tags_of_interest = set()
+
+    results = []
+
+    # loop over the words of the sentence
+    for i, (word, tag) in enumerate(words[k:-k], start=k):
+        # Early stopping
+        if word in stopwords or tag not in tags_of_interest:
+            continue
+
+        sent_tuples = words[i-k:i+k]
+        sent = " ".join(_[0] for _ in sent_tuples)
+
+        if return_tokens is True:
+            toks = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=True, max_preds=max_preds)
+            predicted_words, predicted_tokens = list(zip(*toks))
+
+            results.append(Prediction(
+                word, tag, predicted_words, predicted_tokens))  # type: ignore
+        else:
+            predicted_tokens = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=max_preds)
+            results.append(Prediction(
+                word, tag, [], predicted_tokens))  # type: ignore
+
+    return results
+
+
+def sliding_window_preds(_words: list[str], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, max_preds: int = 10, stopwords: set | None = None, tags_of_interest: set | None = None) -> list[Prediction]:
+    """
+        Returns a list of predictions given the sliding window for context on the model predictions.
+    """
+    if not isinstance(_words, list):
+        raise ValueError(
+            "Incorrect values passed for `words`, expected a list of strings")
+
+    if len(_words) < k:
+        raise ValueError(
+            f'The given window ({_words=}) contains less tokens than the requested sliding window({k=}); ')
+
+    words = nltk.pos_tag(_words, tagset='universal')
+
+    if stopwords is None:
+        stopwords = set()
+
+    if tags_of_interest is None:
+        tags_of_interest = set()
+
+    results = []
+
+    # loop over the words of the sentence
+    for i, (word, tag) in enumerate(words[k:-k], start=k):
+        # Early stopping
+        if word in stopwords or tag not in tags_of_interest:
+            continue
+
+        sent_tuples = words[i-k:i+k]
+        sent = " ".join(_[0] for _ in sent_tuples)
+
+        if return_tokens is True:
+            toks = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=True, max_preds=max_preds)
+            predicted_words, predicted_tokens = list(zip(*toks))
+
+            results.append(Prediction(
+                word, tag, predicted_words, predicted_tokens))  # type: ignore
+        else:
+            predicted_tokens = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=max_preds)
+            results.append(Prediction(
+                word, tag, [], predicted_tokens))  # type: ignore
+
+    return results
+
+
+def default_model(model_name="bert-base-uncased"):
+    from transformers import AutoTokenizer, BertForMaskedLM
+
+    return BertForMaskedLM.from_pretrained(model_name), AutoTokenizer.from_pretrained(model_name)

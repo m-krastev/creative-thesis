@@ -23,7 +23,37 @@ The intuition of machine learning and deep learning is that you can try to repli
 We, therefore, go into detail on some of the methods we utilize in the project, and the various approaches that have been taken in the past.
 
 \subsection{Part of Speech Tagging}
-As we have established, a word may play a different role depending on its position in the sentence, both absolute and relative to the other words. Words that denote objects or persons, we generally call \textbf{nouns}, while words that denote actions (usually active actions, to be more precise), we call \textbf{verbs}. 
+As we have established, a word may play a different role depending on its position in the sentence, both absolute and relative to the other words. Words that denote objects or persons, we generally call \textbf{nouns}, while words that denote (usually active) actions, we call \textbf{verbs}, and so on. 
+Part-of-speech tagging as a task poses the challenge of assigning to the sequence of tokens (we use ``tokens'' and ``words'' interchangeably) $x_1, x_2, \dots, x_n$, a sequence of tags $y_1, y_2, \dots, y_n$, where each token $x_i$ has a corresponding tag $y_i$, making tagging a task of disambiguation, that is, removing ambiguities in text.
+
+The phenomenon of ambiguity is hardly exclusive to the English language, although it is a key problem that we would need to take head-on, as many of the tasks we do want to tackle, rely on POS tagging, in order to avoid needless computations (and in consideration of the limited computing resources for both end-users and ourselves, as we may do larger-scale experiments). Human performance on POS-tagging has been shown to be around 97\% accuracy \citep{manning2011part} for English texts. We will use this as a base of comparison with automatic algorithms.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{p{0.45\textwidth}cc}
+        \toprule
+        \textbf{Types:} & \textbf{WSJ} & \textbf{Brown} \\
+        \midrule
+        \quad Unambiguous (1 tag) &   44,432 (86\%) & 45,799 (85\%) \\
+        \quad Ambiguous (2+ tags) & 7,025 (14\%)  & 8,050 (15\%) \\
+        \midrule
+        \textbf{Tokens:} & & \\
+        \midrule
+        \quad Unambiguous (1 tag) & 577,421 (45\%) &  384,349 (33\%) \\
+        \quad Ambiguous (2+ tags) & 711,780 (55\%) & 786,646 (67\%) \\
+        \bottomrule
+    \end{tabular}
+    \caption{Tag ambiguity in the Brown and WSJ corpora (Treebank-3 45-tag tagset). \\ Adapted from \cite{Jurafsky:2009:SLP:1214993}}.
+    \label{tab:tokens_textbook}
+\end{table}
+As seen in Table \ref{tab:tokens_textbook}, many of the words in the tag-annotated corpora are, in fact, unambiguous. That is, the given word appears only as one single \textit{type} of part of speech. What we may miss, however, is the fact that the actual \textit{tokens}, the words, are mostly ambiguous (55\% on WSJ and 67\% on Brown). For example, \textit{elephant} can only appear as a noun, but the word \textit{back} can appear as either a verb, an adjective, a noun, or an adverb. And \textit{back} is a much more common word than, say, \textit{elephant}. Given this example, we can then proceed to potential solutions.
+
+Generally, the issue is hardly new in the field of text mining, and solutions have been attempted since long ago in the past. The Brown corpus by \cite{francis1979brown} is a manually annotated for parts of speech corpus of American English texts from variety of genres, and has been widely used as a benchmark for algorithms for POS-tagging -- at least ones focusing on the English language. 
+
+One baseline metric is the \textbf{most frequent class} classifier. This method assigns to each word the most frequent tag it appears as in some training corpus. The metric has been shown to be 92\% effective \citep{Jurafsky:2009:SLP:1214993} in correctly classifying the tags of a given text, which is just 5\% below human accuracy, as described above. 
+Reee
+
+ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree ree
 
 \subsection{Word Sense Disambiguation}
 

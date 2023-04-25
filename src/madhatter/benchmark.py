@@ -325,7 +325,7 @@ class CreativityBenchmark:
 
     def concreteness_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
         return _ratings(self.lemmas(), get_concreteness_df("dict")) if lemmas is None else _ratings(lemmas, get_concreteness_df("dict"))
-    
+
     def imageability_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
         return _ratings(self.lemmas(), get_imageability_df("dict")) if lemmas is None else _ratings(lemmas, get_imageability_df("dict"))
 
