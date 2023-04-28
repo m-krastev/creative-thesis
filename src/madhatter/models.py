@@ -71,8 +71,8 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
     mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[
         0].nonzero(as_tuple=True)[0]
 
-    vals, predicted_token_ids = torch.topk(
-        logits[0, mask_token_index], max_preds, dim=-1)  # pylint: disable=no-member
+    vals, predicted_token_ids = torch.topk(# pylint: disable=no-member
+        logits[0, mask_token_index], max_preds, dim=-1)
 
     ret = []
     for i, predicted_token_id in enumerate(predicted_token_ids[0]):
@@ -90,7 +90,7 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
     return ret
 
 
-def sent_predictions(sent: str | list[str], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, stopwords: set | None = None, tags_of_interest: set | None = None):
+def sent_predictions(sent: str | list[str], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, stopwords: set | None = None, tags_of_interest: set | None = None) -> list[Prediction]:
     """Returns predictions for content words in a given sentence. If return_tokens is true, 
     returns a key-value pair dictionary where the key is the used word, and the value is a list of suggested tokens, 
     corresponding to the likekihoods in the first list.

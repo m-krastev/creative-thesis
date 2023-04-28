@@ -219,7 +219,7 @@ class CreativityBenchmark:
         return (word for word in self.words if word not in stopwords)
 
     def content_word_sentlevel(self):
-        """Discards content words for words 
+        """Discards stopwords
 
         Returns:
             list[list[str]]: A list of sentences containing the word tokens.
@@ -234,12 +234,12 @@ class CreativityBenchmark:
         # Returns slopes for the __words__ of the first `n` sentences of the `sents` list of sentences.
         res = []
         for sent in self.tokenized_sents[:n]:
-            results = sent_predictions(sent, self, model, tokenizer, return_tokens=False)
+            results = sent_predictions(sent, self, model, tokenizer, False)
 
             res.append(
                 [slope_coefficient(
-                    np.arange(len(result)),
-                    np.array(result))
+                    np.arange(len(result.probs)),
+                    np.array(result.probs))
                  for result in results
                  if len(result) > 0]
             )
@@ -258,18 +258,19 @@ class CreativityBenchmark:
         similarity_scores = []
         for sent in self.tokenized_sents[:max_sents]:
 
-            probs, predictions = sent_predictions(
-                sent, self, model, tokenizer, return_tokens=True, k=10)
+            preds = sent_predictions(
+                sent, self, model, tokenizer, True, 10)
+            
             average_position_of_correct_prediction = 0
             # number of predictions which do not include the true value in the topmost k results
             missed_predictions = 0
             # note that word here is a tuple of the word and its POS tag
             i = 0
-            for (word, predlist) in predictions.items():
+            for pred in preds:
                 try:
                     # print(word[0], predlist)
-                    average_position_of_correct_prediction += predlist.index(
-                        word[0])
+                    average_position_of_correct_prediction += pred.suggestions.index(
+                        pred.word)
                     i += 1
                 except ValueError:
                     missed_predictions += 1
@@ -288,6 +289,20 @@ class CreativityBenchmark:
             # )
 
         return similarity_scores
+
+    def predictability(self, n: int, model, tokenizer):
+        return [item for sublist in self.calculate_sent_slopes(model, tokenizer, n) for item in sublist]
+
+    def plot_predictability(self, n, model, tokenizer):
+        plotting_list = - np.array(self.predictability(n, model, tokenizer))
+        plt.figure(figsize=(20, 8))
+        plt.plot(plotting_list)
+        plt.title(
+            f"Aggregate predictability of content words within the context of first {n} sentences (Mean: {plotting_list.mean():.3f})")
+        plt.xlabel('Word #')
+        plt.ylabel('Predictability')
+        
+        plt.show()
 
     # def sim_func(word: str, pred: str) -> float | None:
     #     """Arbitrary function to use when calculating vector similarity between the embeddings of two words. Serves as an example.
@@ -342,7 +357,7 @@ class CreativityBenchmark:
 
         ncontent_words = self.ncontent_word_sentlevel()
         # avg_num_content_words = mean(ncontent_words)
-        ratio_content_words = sum(ncontent_words) / len(self.words)
+        ratio_content_words = sum(1 for _ in ncontent_words) / len(self.words)
 
         conc = [_ for _ in self.concreteness_ratings(lemmas) if _]
         conc_num = mean(conc)
