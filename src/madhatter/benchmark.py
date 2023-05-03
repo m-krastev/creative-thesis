@@ -4,7 +4,6 @@
 from itertools import chain
 from time import time
 from typing import Any, Callable, Generator, NamedTuple, Optional, Tuple
-from attr import asdict
 
 import matplotlib.pyplot as plt
 import nltk

@@ -6,3 +6,8 @@ Krastev
 SpaCy
 PoS
 tagset
+Imageability
+imageability
+namings
+Europarliament
+DGT-Acquis

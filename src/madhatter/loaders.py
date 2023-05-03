@@ -7,6 +7,7 @@ from io import BytesIO
 from pathlib import Path
 
 from requests import get
+from tqdm import tqdm
 
 
 def ds_cloze(path="./data") -> dict[str, Path]:
@@ -185,6 +186,46 @@ def read_texts(path: Path | str, length: int = 1_000_000) -> list[str]:
             text.append(line)
             line = f.read(length)
     return text
+
+def load_machinetext(_path: str = './data/') -> dict:
+    # Adapted from https://github.com/openai/gpt-2-output-dataset/blob/master/download_dataset.py
+    path = Path(_path) / 'machinetext'
+    if not path.exists():
+        path.mkdir()
+
+    _ds = [
+        'webtext',
+        'small-117M',  'small-117M-k40',
+        'medium-345M', 'medium-345M-k40',
+        'large-762M',  'large-762M-k40',
+        'xl-1542M',    'xl-1542M-k40',
+    ]
+
+    _splits = [
+        'train', 'valid', 'test'
+    ]
+
+    filenames = [f"{ds}.{split}.jsonl" for split in _splits for ds in _ds]
+
+    # check if dir is empty
+    if next(path.iterdir(), None) is None:
+
+        for filename in filenames:
+            r = get("https://openaipublic.azureedge.net/gpt-2/output-dataset/v1/" + filename, timeout=30, stream=True)
+
+            with open(path / filename, 'wb') as f:
+                file_size = int(r.headers["content-length"])
+                chunk_size = 1000
+                with tqdm(ncols=100, desc="Fetching " + filename, total=file_size, unit_scale=True) as pbar:
+                    # 1k for chunk_size, since Ethernet packet size is around 1500 bytes
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        f.write(chunk)
+                        pbar.update(chunk_size)
+    
+    return {
+        ds: [path / f"{ds}.{split}.jsonl" for split in _splits] for ds in _ds
+    }
+
 
 if __name__ == "__main__":
     print("You should use the functions defined in the file, not run it directly!")

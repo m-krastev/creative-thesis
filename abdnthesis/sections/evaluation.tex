@@ -1,2 +1,99 @@
 \chapter{Evaluation}
 \label{sec:evaluation}
+In the context of application, we opt to implement several experiments that give a better understanding of the potential applications of \textsc{Mad Hatter}. 
+
+\begin{table}[htbp]
+    % latex table with the following specs: i9-9800h, 16gb ram, MacOS
+    \centering
+    \begin{tabular}{lp{0.6\textwidth}}
+        \toprule
+        \textbf{Component} & \textbf{Description} \\
+        \midrule
+        \textbf{CPU} & 2.3 GHz Intel Core i9-9800H \\
+        \textbf{RAM} & 16 GB DDR4 2400 MHz \\
+        \textbf{GPU} & Intel UHD Graphics 630 / Radeon Pro 560X  \\
+        \textbf{OS} & MacOS 13.1\\
+        \bottomrule
+    \end{tabular}
+    \caption{Specifications of the computer used for the experiments.}
+    \label{tab:specs}
+    
+    
+\end{table}
+Wherever not explicitly mentioned, assume the specifications listed in Table \ref{tab:specs}.
+
+\section{Experimental Design}
+\label{sec:experimental_design}
+In this section, we describe the experiments we conducted to evaluate the performance of \textsc{Mad Hatter}. We start by describing the datasets we used for the experiments. Then, we describe the experiments we conducted and the metrics we used to evaluate the performance of \textsc{Mad Hatter}. Finally, we describe the baselines we used for comparison.
+
+\subsection{Datasets}
+\label{sec:datasets_expdesign}
+Table \ref{tab:used_datasets} describes the utilized datasets along with their specific application in the experiment. Further descriptions of the datasets can be found at section \ref{sec:datasets}.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        Experiment & Dataset(s) \\
+        \midrule
+        Document Class Identification & 1. Project Gutenberg (PG) \\
+        & 2. EU DGT-Acquis \& Europarl Corpus [NLTK] (Legal) \\
+        & 3. r/\textsc{WritingPrompts} (WP) \\
+        \midrule
+        Authorship Identification & Project Gutenberg (PG) \\
+        & Up to 50 works from the 1000 most prolific authors \\
+        \midrule
+        Machine-Generated Text Detection & 1. WebText (representing real text)  \\
+        & 2. Generated texts from GPT-2 XL-1542M\\
+
+        
+        \bottomrule 
+    \end{tabular}
+    \caption{Listing with the datasets used for the experiments.}
+    \label{tab:used_datasets}
+\end{table}
+
+\mk{note sometimes that gpt-2 texts are generated from the given training data}
+
+\section{Experiments}
+
+\subsection{Document Class Identification}
+\label{sec:document_class_identification}
+In this experiment, we evaluate the performance of \textsc{Mad Hatter} in identifying the class of a document. The datasets, described in Table \ref{tab:used_datasets}, form the basis of the classes we designate, those being: (conventional) fictional literature (Project Gutenberg / PG), legal texts from the EU DGT-Acquis as well as the Europarliament Corpus distributed with NLTK (Legal / LG), and short-form stories from the subforum \textsc{WritingPrompts} of the social media platform \textsc{Reddit}(WP). 
+
+\subsection*{Setup}
+Initially, all distinct texts are split into chunks of 100,000 characters (with the trailing chunk on its own). This is done primarily to maximize the potential data points of the dataset, but also to speed up the processing of the algorithm for large texts (for example, the texts in PG dataset are usually long-form full books which have upwards of 600,000 characters, assuming a ratio of 100,000 characters per 60-70 pages of text in traditional font and size). Normally, this may carry a potential for overfitting, as the chunks may not be representative of the whole dataset. However, as the texts are 1) very distinct from each other, and 2) have been shown to not split to more than 6-7 chunks, this is not a concern. 
+The datasets are run through a simple pipeline that generates the features described in Section \ref{sec:metrics}. For more flexibility in combining and comparing the datasets for classification, each dataset is separately run through the pipeline. After the features are extracted, each dataset is assigned its respective category. The datasets are then combined and shuffled.
+
+The combined dataset is split into a training, validation, and test set, with a ratio of 80:10:10. The training set is used to train a logistic regression with L2 penalty, which is then used to predict the class of the documents in the test set. As an intermediary step, we run a grid search with the training dataset and the validation dataset in order to find the best parameter for the inverse of regularization strength of the algorithm. The parameter is chosen from the set $\{\frac{1}{64}, \frac{1}{32}, \frac{1}{16}, \frac{1}{8}, \frac{1}{4}, \frac{1}{2}, 1, 2, 4, 8 , 16, 32 , 64\}$. The parameter with the highest accuracy on the validation set is chosen for the final model. The accuracy of the model is then evaluated on the test set.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Performance results for Document Classification}
+    \label{tab:document_classification}
+    \begin{tabular}{ll}
+    \toprule
+    Experiment & Document Classification \\
+    \midrule
+    Size of Train Set & 4686 \\
+    Train Accuracy & 99.827\% \\
+    Validation Accuracy & 99.808\% \\
+    Test Accuracy & 99.827\% \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+\subsection*{Results}
+Table \ref{tab:document_classification} shows the performance results for the document classification experiment. The results show that \textsc{Mad Hatter} is able to identify the class of a document with a very high accuracy. This is not surprising, as the classes are very distinct from each other, yet it affirms that the implemented features capture well specific characteristics of the text. The results also show that the model is not overfitting, as the accuracy on the test set is very similar to the accuracy on the training set.
+
+It should be noted that, despite the size of the training set is relatively small as opposed to other experiments in the field of document classification, the accuracy achieved is remarkably high. This is due to the fact that the features used are very simple and straightforward, and thus do not require a large amount of data to be learned. Furthermore, the algorithm is a step-up in terms of speed from existing baselines such as SVMs and TF-IDF algorithms, which makes it more suitable for large datasets and big scale text analysis. Figure \ref{fig:cmatrix_document_classification} shows the confusion matrix for the document classification experiment. As seen, the document is able to distinguish between the classes with an excellent accuracy, precision and recall.
+
+\subsection*{Discussion}
+Via the algorithm, the classes have been shown to not only be evidently distinct on their own, but also in terms of the features used. The features used in the experiment are very simple and straightforward, and thus do not require a large amount of data to be learned. Potential applications for document classification may include categorizing documents in a large database or potential dataset. Categorization can possibly be applied for sentiment evaluation for product reviews, social media posts, and so on. We go on to explore other potential uses of the algorithm in the following experiments.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../src/plots/document_classification/heatmap.png} 
+    \caption{Confusion Matrix for Document Classification. The rows represent the true labels, while the columns represent the predicted labels.}
+    \label{fig:cmatrix_document_classification}
+\end{figure}
