@@ -40,6 +40,36 @@ bench.report()
 >>> BookReport(title='unknown', nwords=10, mean_wl=3.7, mean_sl=45.0, mean_tokenspersent=10.0, prop_contentwords=0.1, mean_conc=4.0633333333333335, mean_img=5.359999999999999, mean_freq=-1.6792249660842167, prop_pos={'ADJ': 0.2, 'NOUN': 0.3, 'VERB': 0.1}, surprisal=None, predictability=None)
 ```
 
+### Command Line Interface
+Mad Hatter is also available as a CLI tool. Simply provide a filename to the CLI and it will generate a report for you. The following example shows how to use the CLI to generate a report for a text file:
+
+
+
+```bash
+> python -m madhatter -h
+usage: madhatter [-h] [-p] [-u] [-m MAXTOKENS] [-c CONTEXT] [-t TITLE] [-d TAGSET] filename
+
+A command-line utility for generating book project reports.
+
+positional arguments:
+  filename              text file to parse
+
+options:
+  -h, --help            show this help message and exit
+  -p, --postag          whether to return a POS tag distribution over the whole text
+  -u, --usellm          whether to run GPU-intensive LLMs for additional characteristics
+  -m MAXTOKENS, --maxtokens MAXTOKENS
+                        maximum number of predicted tokens for the heavyweight metrics. Tokens start from the beginning of text, -1 to read until the
+                        end
+  -c CONTEXT, --context CONTEXT
+                        context length for sliding window predictions as part of heavyweight metrics
+  -t TITLE, --title TITLE
+                        optional title to use for the report project.
+  -d TAGSET, --tagset TAGSET
+                        tagset to use
+```
+
+
 ### Advanced Usage
 
 You may also choose to use the package's lower-level functions to create your own custom analysis pipeline or integrate with NLP packages such as [SpaCy](https://github.com/explosion/spaCy).
