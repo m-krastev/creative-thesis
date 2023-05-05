@@ -1,7 +1,7 @@
 import nltk
 import pandas as pd
 from .models import sent_predictions as sent_predictions
-from .utils import get_concreteness_df as get_concreteness_df, get_freq_df as get_freq_df, get_imageability_df as get_imageability_df, imageability as imageability, mean as mean, slope_coefficient as slope_coefficient
+from .utils import get_concreteness_df as get_concreteness_df, get_freq_df as get_freq_df, get_imageability_df as get_imageability_df, mean as mean, slope_coefficient as slope_coefficient
 from _typeshed import Incomplete
 from typing import Any, Callable, Generator, NamedTuple, Optional, Tuple
 
@@ -9,7 +9,7 @@ TAG_TO_WN: Incomplete
 TAGS_OF_INTEREST: Incomplete
 
 
-class Report(NamedTuple):
+class BookReport(NamedTuple):
     title: str
     nwords: Optional[int]
     mean_wl: Optional[float]
@@ -78,5 +78,4 @@ class CreativityBenchmark:
     def frequency_ratings(
         self, lemmas: Optional[list[str]] = ...) -> list[Optional[float]]: ...
 
-    def report(self, print_time: bool = ...,
-               postag_distribution: bool = ...) -> Report: ...
+    def report(self, print_time=True, postag_distribution=True, heavyweight_metrics=False, n = 1000, model = None, tokenizer = None, k = 10, word2vec_model=None) -> BookReport: ...

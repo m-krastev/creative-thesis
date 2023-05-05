@@ -385,7 +385,7 @@ class CreativityBenchmark:
                 model, tokenizer = default_model()
             preds = sliding_window_preds_tagged(self.tagged_words(
             )[:n], model, tokenizer, return_tokens=True, k=k, tags_of_interest=self.tags_of_interest, stopwords=stopwords)
-            
+                        
             _surprisal = surprisal(preds, word2vec_model)
             
             _predictability = predictability(preds)

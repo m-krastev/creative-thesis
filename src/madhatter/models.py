@@ -226,3 +226,10 @@ def default_model(model_name="bert-base-uncased"):
     from transformers import AutoTokenizer, BertForMaskedLM
 
     return BertForMaskedLM.from_pretrained(model_name), AutoTokenizer.from_pretrained(model_name)
+
+def default_word2vec():
+    import gensim
+    from nltk.data import find
+    
+    return gensim.models.KeyedVectors.load_word2vec_format(
+    str(find('models/word2vec_sample/pruned.word2vec.txt')), binary=False)
