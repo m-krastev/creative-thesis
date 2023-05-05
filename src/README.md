@@ -7,6 +7,7 @@ Mad Hatter is a Python package that provides a variety of text analysis tools. I
 - Simple features (word count, sentence count, average tokens per sentence, average word length, averange sentence length, etc.)
 - Advanced psycholinguistically-motivated measures (conreteness, imageability, rare word usage, etc.)
 - Context-dependent LLM-based features (surprisal, predictability, etc.)
+  
 ... All optimized for data analysis, graphing, and easy integration with existing tools!
 
 ## Installation
