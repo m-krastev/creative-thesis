@@ -21,8 +21,7 @@ class Prediction(NamedTuple):
 
 
 
-def sliding_window_preds_tagged(words: list[tuple[str, str]], model: Any, tokenizer: Any, return_tokens: Literal[True, False]
-                                = ..., k: int = ..., stopwords: set | None = ..., tags_of_interest: set | None = ...) -> list[Prediction]: ...
+def sliding_window_preds_tagged(words: list[tuple[str, str]], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, max_preds: int = 10, stopwords: set | None = None, tags_of_interest: set | None = None) -> list[Prediction]: ...
 
 
 def sliding_window_preds(sent: str | list[str], model: Any, tokenizer: Any, return_tokens: bool = ...,

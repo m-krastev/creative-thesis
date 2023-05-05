@@ -48,7 +48,7 @@ class BookReport(NamedTuple):
     # for debugging
     def __str__(self):
         newline = "\n\t"
-        return f"Report({newline.join(f'{_[0]}={_[1]}' for _ in (self._asdict().items()))})" # pylint: disable=no-member
+        return f"BookReport({newline.join(f'{_[0]}={_[1]}' for _ in (self._asdict().items()))})" # pylint: disable=no-member
 
 class CreativityBenchmark:
     """

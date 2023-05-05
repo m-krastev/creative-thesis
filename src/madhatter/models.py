@@ -5,7 +5,7 @@ Base file for LLM operations on text.
 # Initialize models
 from typing import Any, Literal, NamedTuple
 
-import nltk
+from nltk import word_tokenize, pos_tag
 import torch
 
 
@@ -96,13 +96,13 @@ def sent_predictions(sent: str | list[str], model: Any, tokenizer: Any, return_t
     corresponding to the likekihoods in the first list.
     """
     if isinstance(sent, str):
-        tokens = nltk.word_tokenize(sent.lower())
+        tokens = word_tokenize(sent.lower())
     elif isinstance(sent, list):
         tokens = [token.lower() for token in sent]
         sent = " ".join(tokens)
     else:
         raise TypeError()
-    words = nltk.pos_tag(tokens, tagset='universal')
+    words = pos_tag(tokens, tagset='universal')
 
     results = []
 
@@ -187,7 +187,7 @@ def sliding_window_preds(_words: list[str], model: Any, tokenizer: Any, return_t
         raise ValueError(
             f'The given window ({_words=}) contains less tokens than the requested sliding window({k=}); ')
 
-    words = nltk.pos_tag(_words, tagset='universal')
+    words = pos_tag(_words, tagset='universal')
 
     if stopwords is None:
         stopwords = set()
