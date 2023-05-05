@@ -12,7 +12,7 @@ In the context of application, we opt to implement several experiments that give
         \textbf{CPU} & 2.3 GHz Intel Core i9-9800H \\
         \textbf{RAM} & 16 GB DDR4 2400 MHz \\
         \textbf{GPU} & Intel UHD Graphics 630 / Radeon Pro 560X  \\
-        \textbf{OS} & MacOS 13.1\\
+        \textbf{OS} & macOS 13.1\\
         \bottomrule
     \end{tabular}
     \caption{Specifications of the computer used for the experiments.}
@@ -41,7 +41,7 @@ Table \ref{tab:used_datasets} describes the utilized datasets along with their s
         & 3. r/\textsc{WritingPrompts} (WP) \\
         \midrule
         Authorship Identification & Project Gutenberg (PG) \\
-        & Up to 50 works from the 1000 most prolific authors \\
+        & Up to 30 works from the 1000 most prolific authors \\
         \midrule
         Machine-Generated Text Detection & 1. WebText (representing real text)  \\
         & 2. Generated texts from GPT-2 XL-1542M\\
@@ -56,6 +56,7 @@ Table \ref{tab:used_datasets} describes the utilized datasets along with their s
 \mk{note sometimes that gpt-2 texts are generated from the given training data}
 
 \section{Experiments}
+We implement three different experiments as a way of evaluating the performance of the application. The first experiment is a document class identification experiment, where we evaluate the performance of \textsc{Mad Hatter} in identifying the class of a document, thus demonstrating that the features we implement are well-defined and enable differentiating between different types of writing. We then move on to evaluating how well the algorithm can differentiate between different writing styles, a task also known as authorship identification. Finally, we follow the logical progression of authorship identification to address a topic that has been gaining traction in recent years, that of machine-generated text detection. This may have further applications in the future, as the field of natural language generation has been steadily growing in the past few years, with the advent of LLM such as GPT-2 \citep{radford2019_gpt2} and GPT-3 \citep{brown_gpt3_2020}.  
 
 \subsection{Document Class Identification}
 \label{sec:document_class_identification}
@@ -97,3 +98,127 @@ Via the algorithm, the classes have been shown to not only be evidently distinct
     \caption{Confusion Matrix for Document Classification. The rows represent the true labels, while the columns represent the predicted labels.}
     \label{fig:cmatrix_document_classification}
 \end{figure}
+
+\subsection{Authorship Identification}
+\label{sec:authorship_identification}
+After we have identified that the features are able to distinguish between different classes of documents, we now ask, ``Can a machine distinguish between texts from the same class?'' 
+
+This is a homogenous classification task, where the classes are very similar to each other, and the specific task is to identify the author of a text, given a set of candidate authors. 
+For example, given the text of ``Alice in Wonderland'', \textsc{Mad Hatter}'s task is to identify that the author is Lewis Carroll. The task is a natural progression from the document classification task and a more fine-grained existing problem in the field of NLP. 
+
+\subsection*{Setup}
+We make use of the work done by \cite{gutenberg_dataset} to standardize the Project Gutenberg for data exploration and analysis. We filter out for the most prolific 1000 authors in the available non-copyright literature. Furthermore, we randomly sample a maximum of 30 works per author. This is done in order to avoid overfitting for the more prolific authors (number one has more than 300), and even then only the top 200 authors have more than 30. A single chunk of 100,000 characters is then taken from each text and added to a list for processing. 
+
+The pipeline is similar to the one listed for document classification. We process all samples and obtain the features described in Section \ref{sec:metrics}. The dataset is then split into a training, validation, and test set, with a ratio of 80:10:10. The features are then standardized (subtracting the mean and dividing by the standard deviation for each column). The training set is used to train a logistic regression with L2 penalty, which is then used to predict the author of the documents in the test set. As an intermediary step, we run a grid search with the training dataset and the validation dataset in order to find the best parameter for the inverse of regularization strength of the algorithm. The parameter is chosen from the set $\{\frac{1}{64}, \frac{1}{32}, \frac{1}{16}, \frac{1}{8}, \frac{1}{4}, \frac{1}{2}, 1, 2, 4, 8 , 16, 32 , 64\}$. The parameter with the highest accuracy on the validation set is chosen for the final model. The accuracy of the model is then evaluated on the test set.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lll}
+    \toprule
+    Experiment & A. Id. ($n=1000$) & A. Id. ($n=50$) \\
+    \midrule
+    Size of Data (train/val/test) & 17306:962:961 & 1290:72:72 \\
+    Accuracy (train/val/test) & 26.83\%/23.91\%/20.19\% &  55.50\%/51.39\%/56.94\% \\
+    Precision & 0.229/0.159/0.132  & 0.528/0.453/0.408 \\
+    Recall & 0.249/0.19/0.164 & 0.539/0.414/0.529 \\
+    F1-Score & 0.216/0.158/0.134 & 0.518/0.414/0.431 \\
+    \bottomrule
+    \end{tabular}
+         
+    \caption{Performance results for Authorship Identification ($n=1000$ and $n=50$).} 
+    \label{tab:authorship_identification}
+\end{table}
+
+\subsection*{Results}
+Table \ref{tab:authorship_identification} details the results of the case study for both the 50 authors case and the 1000 authors case. Accuracy, precision, recall and F1 scores are reported. The model is able to distinguish between authors with an accuracy of 55.50\% for the 50 authors case, and 26.83\% for the 1000 authors case. The results also show that the model is not overfitting, as the accuracy on the test set is similar to the accuracy on the training set. Although not clearly visible, Figure \ref{fig:cmatrix_authorship_identification} shows the confusion matrix for the authorship identification experiment. 
+
+Unfortunately, the model struggles to achieve high accuracy for a huge number of authors, in our case the total number being a thousand. However, if we consider a baseline of a simple coin flipping, that is, a model that will randomly assign a label from the available labels (authors) to each work with a probability of $\frac{1}{1000}$ (for the bigger classification case), we can see that the model does perform relatively well in distinguishing some features that are similar between authors. The confusion matrix potentially indicates similar features between authors, a characteristic that may be a topic for further research. Note the highest number of correct predictions (6 and 6 out of a maximum of 30) respectively in the middle of the matrix in \ref{cn_50} and towards the tail end of the diagonal of \ref{cn_1000} (around (855,855)). The other values are relatively low, with the highest number of incorrect predictions being 3 and 3, respectively. 
+
+The results are, in fact, in line with the results of \cite{qian_deep_nodate}, who report an accuracy of 69.1\% on the Reuters 50\_50 (C50) dataset and 89.2 \% on the Gutenberg dataset (for a maximum of 50 authors and 45000 paragraphs of text from their works). The authors used sentence- and article-level GRUs and an article-level LSTM neural network to achieve these results. The authors also provided a baseline accuracy of 12.24\% via Gradient Boosting Classifier with 3 features, those being average word length, average sentence length, and Hapax Legomenon ratio (fraction of unique words), 2 of which we used. Given this baseline and the trivial computational complexity of our experiments, we have a reason to believe that we surpass the baseline and the researched features do enable stronger distinction between authors in this classification task.
+
+Potential areas for improvement include the use of more sophisticated features, such as the ones described in \ref{heavyweight_metrics}, as well as the use of more sophisticated models for multiclass classification, such as SVMs, neural networks, or Naive Bayes classifiers. We then move on to the next case study, which is the identification of machine-generated text.
+
+\begin{figure}[htbp]
+    \begin{subfigure}[t]{0.5\textwidth}
+        \includegraphics[height=2.5in]{../src/plots/authorship_identification/aid_50.png}
+        \caption{$n=50$}\label{cn_50}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+        \includegraphics[height=2.5in]{../src/plots/authorship_identification/aid_1000.png}
+        \caption{$n=1000$}\label{cn_1000}
+    
+    \end{subfigure}
+    \caption{Confusion Matrices for Authorship Identification. The rows represent the true labels, while the columns represent the predicted labels.}
+    \label{fig:cmatrix_authorship_identification}
+
+\end{figure}
+
+
+\subsection{Machine-Generated Text Identification}
+Having tested our hypothesis that the features are able to distinguish between different classes of documents in section \ref{sec:document_class_identification}, and then identified that the features are able to distinguish between different authors in section \ref{sec:authorship_identification}, we now move on to the ambitious goal of identifying machine-generated text. LLMs have seen explosive growth in the past few years, and generating human-like text, both grammatically and (somewhat) logically-sound, is now far from a distant dream. However, the ability to generate text indistinguishable from human-written text has raised concerns about the potential for misuse of such models. Particular issues may arise for example with academic grading, as AI writing tools become more and more prevalent. Fields other than academia may also be affected, such as journalism, where AI writing tools may be used to lazily generate non-proofread articles with the potential to spread misinformation. Of course, the potential for misuse is not limited to the above examples, and there are plenty of uses that malicious agents can come up with, either for personal gain or for the sake of spreading chaos.
+
+Now then, we arrive back at the essence of the problem we are trying to solve: ``What defines creativity? What defines human creativity?'' The answer to this question is not simple, and it is not the goal of this thesis to answer it in full. However, we can attempt to answer a more specific question: ``Can a machine distinguish between human-written text and machine-generated text?''
+
+\subsection*{Setup}
+We make use of the WebText dataset \citep{radford2019_gpt2}, which is a large dataset of text scraped from the internet and used to train the influential GPT-2 (Generative Pretrained Transformer), a LLM developed by OpenAI. Texts generated by GPT-2 themselves serve as the basis for the ``machine-generated'' classification labels. Samples from the WebText dataset used to train GPT-2 form the basis for the ``human-written'' classification labels. 20,000 samples are randomly drawn from the set of machine-generated texts, and 20,000 --- from the set of human texts.
+
+The dataset is split into a training, validation, and test set, with a ratio of 80:10:10. The training set is used to train a logistic regression with L2 penalty, which is then used to predict the class of the documents in the test set. As an intermediary step, we run a grid search with the training dataset and the validation dataset in order to find the best parameter for the inverse of regularization strength of the algorithm. The parameter is chosen from the set $\{\frac{1}{64}, \frac{1}{32}, \frac{1}{16}, \frac{1}{8}, \frac{1}{4}, \frac{1}{2}, 1, 2, 4, 8 , 16, 32 , 64\}$. The parameter with the highest accuracy on the validation set is chosen for the final model. The accuracy of the model is then evaluated on the test set. 
+
+\begin{table}[htbp]
+    \centering
+    \caption{Performance results for MGT Detection}
+    \label{tab:mgt_detection}
+    \begin{tabular}{llll}
+    \toprule
+     & \multicolumn{3}{c}{Split} \\
+     \cline{2-4}
+     & Train & Val & Test \\
+    \midrule 
+    Size of Data & 32000 & 4000 & 4000 \\
+    Accuracy & 0.697 & 0.700 & 0.700 \\
+    Precision & 0.698 & 0.702 & 0.700 \\
+    Recall & 0.697 & 0.700 & 0.700 \\
+    F1-Score & 0.697 & 0.700 & 0.700 \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    \begin{table}[htbp]
+        \centering
+        \caption{Performance results for MGT Detection}
+        \label{tab:mgt_detection}
+        \begin{tabular}{llll}
+        \toprule
+         & \multicolumn{3}{r}{Split} \\
+         & Train & Val & Test \\
+        \midrule
+        Size of Data & 32000 & 4000 & 4000 \\
+        \cline{1-1}
+        Accuracy & 0.697 & 0.700 & 0.700 \\
+        \cline{1-1}
+        Precision & 0.698 & 0.702 & 0.700 \\
+        \cline{1-1}
+        Recall & 0.697 & 0.700 & 0.700 \\
+        \cline{1-1}
+        F1-Score & 0.697 & 0.700 & 0.700 \\
+        \cline{1-1}
+        \bottomrule
+        \end{tabular}
+        \end{table}
+
+
+        \begin{table}[htbp]
+            \centering
+            \caption{Performance results for MGT Detection}
+            \label{tab:mgt_detection}
+            \begin{tabular}{lllllll}
+            \toprule
+             &  & Size of Data & Accuracy & Precision & Recall & F1-Score \\
+            \midrule
+            \multirow[c]{3}{*}{Split} & Train & 32000 & 0.697 & 0.698 & 0.697 & 0.697 \\
+             & Val & 4000 & 0.700 & 0.702 & 0.700 & 0.700 \\
+             & Test & 4000 & 0.700 & 0.700 & 0.700 & 0.700 \\
+            \cline{1-2}
+            \bottomrule
+            \end{tabular}
+            \end{table}

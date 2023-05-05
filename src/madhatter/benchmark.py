@@ -3,7 +3,7 @@
 # pylint: disable=missing-function-docstring, invalid-name
 from itertools import chain
 from time import time
-from typing import Any, Callable, Generator, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Generator, Iterable, NamedTuple, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import nltk
@@ -14,8 +14,9 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from scipy.interpolate import make_interp_spline
 
-from .models import sent_predictions
-from .utils import (_ratings, get_concreteness_df, get_freq_df, get_imageability_df, mean, slope_coefficient, stopwords)
+from .models import default_model, sent_predictions, sliding_window_preds_tagged
+from .metrics import _ratings, predictability, surprisal
+from .utils import (get_concreteness_df, get_freq_df, get_imageability_df, mean, slope_coefficient, stopwords)
 
 sns.set_theme()
 
@@ -28,7 +29,7 @@ TAG_TO_WN = {
 
 TAGS_OF_INTEREST = {'NOUN', 'VERB', 'ADJ'}  # ignore 'ADV'
 
-class Report(NamedTuple):
+class BookReport(NamedTuple):
     """Report object
     """
     title: str
@@ -41,7 +42,10 @@ class Report(NamedTuple):
     mean_img: Optional[float] = None
     mean_freq: Optional[float] = None
     prop_pos: Optional[dict] = None
+    surprisal: Iterable | None = None
+    predictability: Iterable | None = None
 
+    # for debugging
     def __str__(self):
         newline = "\n\t"
         return f"Report({newline.join(f'{_[0]}={_[1]}' for _ in (self._asdict().items()))})" # pylint: disable=no-member
@@ -344,7 +348,7 @@ class CreativityBenchmark:
         return _ratings(self.lemmas(), get_imageability_df("dict")) if lemmas is None else _ratings(lemmas, get_imageability_df("dict"))
 
 
-    def report(self, print_time=True, postag_distribution=False) -> Report:
+    def report(self, print_time=True, postag_distribution=True, heavyweight_metrics=False, n = 1000, model = None, tokenizer = None, k = 10, word2vec_model=None) -> BookReport:
         """
             Generates a report for the text.
         """
@@ -375,8 +379,20 @@ class CreativityBenchmark:
             postag_dist = {tag: val/total for tag,
                            val in postag_counts.items() if tag in self.tags_of_interest}
 
-        result = Report(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(
-        ), self.avg_tokens_per_sentence(), ratio_content_words, conc_num, image_num, freq_num, postag_dist)
+        _surprisal, _predictability = None, None
+        if heavyweight_metrics is True:
+            if model is None or tokenizer is None:
+                model, tokenizer = default_model()
+            preds = sliding_window_preds_tagged(self.tagged_words(
+            )[:n], model, tokenizer, return_tokens=True, k=k, tags_of_interest=self.tags_of_interest, stopwords=stopwords)
+            
+            _surprisal = surprisal(preds, word2vec_model)
+            
+            _predictability = predictability(preds)
+
+
+        result = BookReport(self.title, len(self.words), self.avg_word_length(), self.avg_sentence_length(
+        ), self.avg_tokens_per_sentence(), ratio_content_words, conc_num, image_num, freq_num, postag_dist, _surprisal, _predictability)
 
         if print_time is True:
             print(f"Report took ~{time() - time_now:.3f}s")

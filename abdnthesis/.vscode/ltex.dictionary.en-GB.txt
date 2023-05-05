@@ -11,3 +11,6 @@ imageability
 namings
 Europarliament
 DGT-Acquis
+multiclass
+SVMs
+val

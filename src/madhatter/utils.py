@@ -5,10 +5,7 @@ import numpy.typing as ntp
 import numpy as np
 import pandas as pd
 
-from nltk.corpus import stopwords
 # from .loaders import load_ concreteness, load_imageability
-
-stopwords = set(stopwords.words('english'))
 
 
 def mean(items: Sequence) -> float:
@@ -32,14 +29,14 @@ def slope_coefficient(one: ntp.NDArray, two: ntp.NDArray) -> float:
     return ((one*two).mean(axis=0) - one.mean()*two.mean(axis=0)) / ((one**2).mean() - (one.mean())**2)
 
 
-def get_concreteness_df(_format: Literal['df','dict'] ="df") -> pd.DataFrame | dict:
+def get_concreteness_df(_format: Literal['df', 'dict'] = "df") -> pd.DataFrame | dict:
     # load_concreteness()
-    dataframe = pd.read_csv(BytesIO(pkgutil.get_data(__package__, 'static/concreteness/concreteness.csv')), sep="\t") # type: ignore
+    dataframe = pd.read_csv(BytesIO(pkgutil.get_data(
+        __package__, 'static/concreteness/concreteness.csv')), sep="\t")  # type: ignore
     # concreteness_df = concreteness_df.set_index("Word").sort_index()
 
     return dataframe if _format == "df" else dict(
         zip(dataframe["Word"], dataframe["Conc.M"]))
-
 
 
 def get_imageability_df(_format="df") -> pd.DataFrame | dict:
@@ -47,50 +44,29 @@ def get_imageability_df(_format="df") -> pd.DataFrame | dict:
 
     # load_imageability()
     # Dicts are the fastest way to make string accesses
-    dataframe = pd.read_csv(BytesIO(pkgutil.get_data(__package__, "static/imageability/cortese2004norms.csv")), header=9) # type: ignore
+    dataframe = pd.read_csv(BytesIO(pkgutil.get_data(
+        __package__, "static/imageability/cortese2004norms.csv")), header=9)  # type: ignore
     return dataframe if _format == "df" else dict(
         zip(dataframe["item"], dataframe["rating"]))
-
-
-
-def imageability(data: str | list[str], imageability_df: pd.DataFrame) -> Optional[float] | list[Optional[float]]:
-    """Returns the mean imageability rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
-    # TODO: Possibly look at amortized values given standard deviations
-
-    # Fastest way for lookups so far.
-    dictionary = dict(
-        zip(imageability_df["item"], imageability_df["rating"]))
-
-    return _ratings(data, dictionary)
-
-def _ratings(data, func: dict):
-    """j"""
-
-    if isinstance(data, str):
-        return func.get(data.lower(), None)
-    if isinstance(data, list):
-        return [func.get(w.lower(), None) for w in data if w not in stopwords] # type: ignore
-
-    raise TypeError(
-        f"Inappropriate argument type for `word`. Expected `list` or `str`, but got {type(data)}")
 
 
 def get_freq_df(_format) -> pd.DataFrame | dict:
     '''
     Key:
-    
+
     Word = Word type (headword followed by any variant forms) - see pp.4-5
-    
+
     PoS  = Part of speech (grammatical word class - see pp. 12-13)
-    
+
     Freq = Rounded frequency per million word tokens (down to a minimum of 10 occurrences of a lemma per million)- see pp. 5
-    
+
     Ra   = Range: number of sectors of the corpus (out of a maximum of 100) in which the word occurs
-    
+
     Disp = Dispersion value (Juilland's D) from a minimum of 0.00 to a maximum of 1.00.
     '''
 
-    df_freq = pd.read_csv(BytesIO(pkgutil.get_data(__package__, "static/frequency/frequency.csv")), encoding='unicode_escape', sep="\t") # type: ignore
+    df_freq = pd.read_csv(BytesIO(pkgutil.get_data(
+        __package__, "static/frequency/frequency.csv")), encoding='unicode_escape', sep="\t")  # type: ignore
 
     # drop unnamed column one cuz trash source,
     # also remove the column storing word variants
@@ -131,19 +107,5 @@ def get_freq_df(_format) -> pd.DataFrame | dict:
     return dict(zip(df_freq.index, -np.log10(df_freq["Freq"])))  # 5900 entries
 
 
-def frequency_ratings(data):
-    """Returns log10 frequency for lemmatized words"""
-    df_dict = get_freq_df("dict")  # 6652 entries
-
-    return _ratings(data, df_dict) # type: ignore
-
-
-def concreteness(data: str | list[str], concreteness_df: pd.DataFrame) -> float | None | list[float | None]:
-    """Returns the mean concreteness rating for a given word or list of words, according to the table of ~40,000 words and word definitions, as defined by Brysbaert et al (2013)."""
-    # TODO: Possibly look at amortized values given standard deviations
-
-    # Fastest way for lookups so far.
-    conc = dict(
-        zip(concreteness_df["Word"], concreteness_df["Conc.M"]))
-
-    return _ratings(data, conc)
+stopwords = {'of', 'been', "hadn't", "isn't", 'i', 'this', 'these', 'were', 'the', 'and', 'by', 'don', 'm', 'o', "wasn't", 'we', 'all', 'same', 'not', 'weren', 'at', 'those', 'few', 'shan', 'a', 'through', 'ain', 'its', 'how', "that'll", 'ours', 'you', 'here', 'nor', "weren't", 'myself', 'aren', 'why', "didn't", 'having', 'for', 'so', 'she', "mightn't", 'in', 'haven', 't', 'being', 'yourself', 'an', 'to', 'didn', 'between', 'them', "couldn't", "mustn't", 'itself', 'is', 'only', "aren't", 'very', "you'll", 'had', 'into', 'if', 'their', 'mustn', 'off', 'what', 'd', 'as', 'ourselves', 'that', 'hasn', 'each', 'me', 'below', "haven't", 'wouldn', 'shouldn', 'there', 'your', 'or', 'such', 'because', 'during', 'yourselves', 'other', 'hadn',
+             "should've", 'own', 'mightn', 'our', 'y', 'after', 'on', "doesn't", 'ma', 'more', 'again', 'out', 'when', "you've", 'above', 'whom', 'under', 'have', 'll', 're', 've', 'isn', 'too', 'won', 'which', 'until', "you're", 'up', "hasn't", 'about', 'while', 'needn', 'wasn', 'doesn', 'once', 'he', 'my', 'they', 'him', 'does', 'her', 'most', 'am', 'further', 'then', 'some', 'herself', 'than', 'yours', 'over', 'down', 's', 'both', 'themselves', "won't", "shan't", 'can', "wouldn't", 'has', 'hers', 'did', 'against', 'be', "shouldn't", 'doing', "don't", 'will', 'his', 'no', 'should', "you'd", 'theirs', 'couldn', 'do', 'any', "it's", 'who', 'with', 'from', 'was', 'himself', 'it', 'just', 'now', 'but', 'before', "needn't", 'where', 'are', "she's"}.union("!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~")

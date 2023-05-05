@@ -7,6 +7,10 @@ from .models import *
 from .utils import *
 
 from .loaders import load_concreteness, load_freq, load_imageability
+from nltk import download
+
+# Hardcode download all NLTK resources just in case TODO: FIX
+# download('all')
 
 load_freq()
 load_concreteness()
