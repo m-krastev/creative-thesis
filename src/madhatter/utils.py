@@ -1,8 +1,9 @@
-from io import BytesIO
 import pkgutil
-from typing import Literal, Optional, Sequence
-import numpy.typing as ntp
+from io import BytesIO
+from typing import Literal, Sequence
+
 import numpy as np
+import numpy.typing as ntp
 import pandas as pd
 
 # from .loaders import load_ concreteness, load_imageability

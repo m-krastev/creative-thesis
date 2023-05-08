@@ -1,4 +1,7 @@
 
+from typing import Any, Optional
+from .utils import get_freq_df as get_freq_df, mean as mean, stopwords as stopwords
+from .models import Prediction as Prediction
 from typing import Any, Literal, Optional, overload
 
 import numpy.typing as ntp
@@ -56,3 +59,22 @@ def predictability(preds: list[Prediction]) -> ntp.NDArray: ...
 
 def surprisal(preds: list[Prediction],
               word2vec_model: Any | None = None) -> ntp.NDArray: ...
+
+
+def imageability(
+    data: str | list[str], imageability_df: pd.DataFrame) -> Optional[float] | list[Optional[float]]: ...
+
+
+def frequency_ratings(data): ...
+
+
+def word2vec_similarity(
+    preds: list[Prediction], word2vecmodel) -> list[float]: ...
+def wordnet_lin_similarity(
+    preds: list[Prediction], ic_dict, tag_to_wn: dict): ...
+
+
+def wordnet_wup_similarity(preds: list[Prediction], tag_to_wn: dict): ...
+def predictability(preds: list[Prediction]) -> ntp.NDArray: ...
+def surprisal(preds: list[Prediction],
+              word2vec_model: Any | None = ...) -> ntp.NDArray: ...

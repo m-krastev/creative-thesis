@@ -262,7 +262,7 @@ class CreativityBenchmark:
         for sent in self.tokenized_sents[:max_sents]:
 
             preds = sent_predictions(
-                sent, self, model, tokenizer, True, 10)
+                sent, model, tokenizer, True, k=10)
             
             average_position_of_correct_prediction = 0
             # number of predictions which do not include the true value in the topmost k results
@@ -338,7 +338,7 @@ class CreativityBenchmark:
             lemmatizer.lemmatize(word, TAG_TO_WN[tag]) for sent in self.tagged_sents for word, tag in sent if tag in TAG_TO_WN
         ]
 
-    def frequency_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:
+    def frequency_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]: 
         return _ratings(self.lemmas(), get_freq_df("dict")) if lemmas is None else _ratings(lemmas, get_freq_df("dict"))
 
     def concreteness_ratings(self, lemmas: Optional[list[str]] = None) -> list[Optional[float]]:

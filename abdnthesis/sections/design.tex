@@ -164,20 +164,15 @@ We will be using PEP8\footnote{\url{https://peps.python.org/pep-0008}} \citep{pe
 We use NumPy's code style guide for documenting classes and functions\footnote{\url{https://numpydoc.readthedocs.io/en/latest/format.html}}. Using NumPy's style guide provides a clear and concise way of documenting the parameters and return values of functions and methods. It also has the added benefit of being familiar with other developers and researchers, as NumPy is a very popular library in the Python ecosystem, therefore potential users will be familiar with IDE-provided Intellisense help pop-ups on function definitions. Finally, it is handy as potential usage of a static documentation generator such as Sphinx\footnote{\url{https://www.sphinx-doc.org/en/master/}} is made easier, as Sphinx is able to parse NumPy-style docstrings and generate documentation from them.
 
 \subsection{Linting}
-As part of the development process, we set up an automated linting service inside the IDE using the Pylint linter \footnote{\url{https://www.pylint.org/}}. Pylint checks for errors in the code, as well as enforces the PEP8 code style guide. It also provides a variety of other checks, such as checking for unused imports, checking for unused variables, checking for undefined variables, and so on. We also use the Pylance language server\footnote{\url{https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance}} for the Visual Studio Code IDE, which provides a variety of other checks, such as type checking, and so on.
+As part of the development process, we set up an automated linting service inside the IDE using the Pylint linter \footnote{\url{https://www.pylint.org/}}. Pylint checks for errors in the code, as well as enforces the PEP8 code style guide. It also provides a variety of other checks, such as checking for unused imports, checking for unused variables, checking for undefined variables, and so on. We also use the Pylance language server\footnote{\url{https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance}} for the Visual Studio Code IDE, which provides a variety of other checks, such as type checking and errors arising from it.
 
 \subsection{Testing}
+We plan to implement minimal testing in order to avoid common errors and bugs. We will be using the pytest\footnote{\url{https://docs.pytest.org/en/6.2.x/}} framework for testing. Tests will be black-box style, input in, check output, and make sure no errors are thrown. 
 
-
-\subsection{Code Review}
 \subsection{Version Control}
-The outlined project 
-\subsubsection{Git and GitHub}
+
+We will be using Git\footnote{\url{https://git-scm.com/}} for version control. Commits are to be routinely pushed to a central GitHub repository. Most code files are hosted in a monorepo containing the source code of the application, prototyping Jupyter Notebooks and tests, as well as the source of the very report being read here, and several other miscellaneous features. 
+
 
 \section{Documentation}
-We use Sphinx in this household.
-\subsection{Sphinx}
-
-\subsection{Hosting}
-
-
+As mentioned, we use the NumPy code styling guide for documenting classes and functions, and part of the reason for that is the ease of use of the documentation generator Sphinx. Sphinx is a static documentation generator, which is able to parse NumPy-style docstrings and generate documentation from them. Sphinx-created files are then able to be hosted on a variety of platforms, such as GitHub Pages, or Read the Docs. In our use-case, we will be using Sphinx to generate documentation for the application, and will be hosting it on Read the Docs. Good documentation is essential, as we plan to release our package as an open-source library that can be installed and hosted on PyPi, and we want to make it as easy as possible for users to use the package.

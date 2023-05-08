@@ -27,7 +27,7 @@ def main():
 
     args = parser.parse_args()
 
-    from .typings.benchmark import CreativityBenchmark
+    from .benchmark import CreativityBenchmark
 
     with open(args.filename) as f:
         text = f.read()
