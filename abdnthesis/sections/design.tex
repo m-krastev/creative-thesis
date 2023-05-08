@@ -13,52 +13,135 @@ We use scenarios to better illustrate the use-cases of the \textsc{Mad Hatter} p
 \begin{enumerate}
     \item Evaluating linguistic features associated with creative aspects of language in a given text. Users should be able to clearly present a text and evaluate it against a set of metrics, which will then be presented in a clear and concise manner.
     \item Providing methods for interacting, plotting and visualizing the results of the evaluation. Users should be able to easily interact with the results of the evaluation, and plot them in a way that is easy to understand and interpret.
-    \item Providing a pipeline for batch data analysis to be used in larger-scale linguistic research operations. Users should be able to easily process large amounts of data in a batch manner, and then interact with the results of the evaluation in a way that is easy to understand and interpret.
+    \item Providing a pipeline for batch data analysis to be used in larger-scale linguistic research operations. The users should be able to easily process large amounts of data in a batch manner, and then interact with the results of the evaluation in a way that is easy to understand and interpret.
 \end{enumerate}
 
 \subsection{Functional Requirements}
-Functional requirements pinpoint the specific tasks that the application needs to be able to perform. They are the most important part of the requirements, as they are the ones that will be used to evaluate the success of the application. We will list the functional requirements below.
-\subsubsection{Accuracy, etc.}
+Functional requirements pinpoint the specific tasks that the application needs to be able to perform. They are the most important part of the requirements, as they are the ones that will be used to evaluate the success of the application. We list those below.
 
-\begin{enumerate}
-    \item 
-\end{enumerate}
+\textbf{(FR1) The user must be able to evaluate a given text against a set of metrics.}
+
+When fed a text, the system must return evaluation of the text against a set of metrics. The user must be able to specify which metrics they want to use for the evaluation, and the system must be able to return the results of the evaluation in a clear and concise manner.
+
+\textbf{(FR2) The user must be able to interact with the results of the evaluation.}
+
+The user must be able to interact with the results of the evaluation in a way that is easy to understand and interpret. The user must be able to plot the results of the evaluation, as well as export them in a format that is easy to use in other applications.
+
+\textbf{(FR3) The user must be able to batch-process a large volume of texts.}
+
+The user must be able to batch-process a large volume of texts. The return format of the data must be easy to integrate with other applications, especially in the context of linguistic data analysis.
 
 
-
-
-% We might want to consider the task in the context of software development as well
 \subsection{Non-functional Requirements}
 The package henceforth needs to satisfy a list of viable non-functional requirements, which we will list below.
-\subsubsection{Efficacy}
-The implemented algorithms must be viable to deploy both in small-scale and for large-scale applications. This means that the algorithms must be able to scale to large amounts of data, while also being able to run on a single machine. In our case, a user should be able to quickly evaluate their texts across several metrics, however, as we also strive to apply this benchmark to large-scale corpora, we must also ensure that the algorithms are scalable.
-We will therefore not only seek to reiterate on the existing literature and implement the most promising algorithms for the task of creativity evaluation, but also optimize them for deployment on HPC clusters. 
-\subsection{Memory Requirements}
-The old adage that \textit{memory is cheap} is not entirely true. While it is true that memory is cheap, it is also true that memory is not free (\textit{and no, we cannot ``just download more RAM''}). In fact, some LLMs simply tend to be too large to reliably fit within the memory constraints of a personal computer. \mk{We should probably cite some sources here.} Furthermore, model accuracy tends to grow with the size of the neural network and the size of the used vocabulary. Naturally, we then need to seek a compromise on the size of the models we use, as we cannot:
+
+\textbf{(NFR1) The package must be able to be used by users with minimal technical knowledge.}
+
+The package should provide methods that make text analysis viable for users with minimal technical knowledge. Beyond installation, it should be trivial to evaluate and interpret the results of the evaluation. \mk{addressed by python!} The package must also be able to be used with all sorts of texts --- from single sentences to full-length books.
+
+\textbf{(NFR2) The package must work within limited computing capabilities.}
+
+As above, users should be able to run and evaluate their texts on their personal computers, without the need for specialized hardware. The package should be able to run on a single machine, and should not require any specialized hardware.
+
+\textbf{(NFR3) The package must be able to scale to large amounts of data.}
+
+The package should be able to scale to large amounts of data, and should be able to process large amounts of data in a reasonable timeframe. 
+
+\textbf{(NFR4) The package must be easily configurable.}
+
+The package should be easily configurable, and should allow users to easily change the parameters of the evaluation. The package should also allow users to selectively include metrics to the evaluation.
+
+\textbf{(NFR5) The package must be easily extensible.}
+
+The package should be easily extensible, and should allow advanced users to easily add new metrics to the evaluation. The package should also allow users to easily add new methods for interacting with the results of the evaluation.
+
+\textbf{(NFR6) The package must be well-documented.}
+
+The package should be well-documented, and should provide a clear and concise user guide, as well as a clear and concise documentation for the package itself. The documentation should be easily accessible and should be easy to understand.
+
+\textbf{(NFR7) The package must be issue-proof.}
+
+The package should be well-tested against a set of test cases, and must contain as few bugs and unhandled behaviours as possible. Exceptions and errors, wherever they may occur, must have a clear and concise message, guiding users to the source of the issue.
+
+\subsection{Concerns}
+
+Working with text and developing a package for text analysis results in several concerns we need to address. 
+
+\paragraph{Speed.} Working with text can be \textit{slow}. This is especially true when working with large amounts of text, or when working with large language models. This means that we must take into account the algorithms and data structures we apply, as a single unoptimized algorithm can result in a very slow application. We must also take into account the size of the language models we use, as larger models tend to be slower to process.
+
+\paragraph{Memory Consumption.} The old adage that \textit{memory is cheap} is not entirely true. While it is true that memory is cheap, it is also true that memory is not free (\textit{and no, we cannot ``just download more RAM''}). Furthermore, model accuracy tends to grow with the size of the neural network and the size of the used vocabulary. Naturally, we then need to seek a compromise on the size of the models we use, as we cannot:
 \begin{enumerate}
-    \item Use too large models during the research stage of the project, where we aim to process large corpora, evaluate the performance of the algorithms on them and make conclusions about the data. If we do aim to speed up this process, it is very likely that we would benefit from parallel computing --- but processing large sizes of text in parallel has a non-negligible likelihood of running out of allocated memory even on some HPC clusters.
-    \item Force users to run too large models on their personal computers, as this would be a very poor user experience. We do not plan to hardcode any models (large or small) in the application, however, the provided guides will reference certain smaller-scale pretrained LLMs. Naturally, we would provide a way for more experienced and more capable organizations or individuals to run larger models with minimal effort. 
+    \item Feasibly make use of the larger model variants during the research stage of the project, where we aim to process large corpora, evaluate the performance of the algorithms on them and make conclusions about the data. If we do aim to speed up this process, we can benefit from parallel computing --- but processing large batches of text in parallel has a non-negligible likelihood of running out of allocated memory even on some \acrfull{hpc} clusters.
+    \item Expect users to run too large models on their personal computers, as this would result in a very poor user experience and a far reduced space of potential users. We do not plan to hardcode any models (large or small) in the application, however, the provided guides will reference selected smaller-scale pretrained LLMs, which come with the advantage of being more sustainable long-term. Naturally, we will also provide a way for more experienced and more capable organizations or individuals to run larger models with minimal effort. 
 \end{enumerate} 
+
+\paragraph{Ease of Use.} The target users are not expected to be very technically proficient. This means that we need to provide a way for users to easily interact with the application, and easily interpret the results of the evaluation. We also need to provide a way for users to easily install and use the application, without the need for specialized hardware or software. The application should be potentially viable for instant feedback in the context of writing assistance, and potentially integrable with existing writing tools.
 
 \section{Technology Choices}
 \subsection{Python}
-We will be using Python version 3.10.X as shipped by the Anaconda software package. We are aware that Python 3.11 brings non-negligible optimizations and faster execution speed for some Python scripts, however, in light of the fact that the Anaconda distribution is still shipping Python 3.10.X, we will be using that version for the time being. We will be using the Anaconda distribution as it is a very popular and mature distribution of Python, which is also very easy to install and use. It also comes with a large number of pre-installed packages, which will be very useful for the current developer experience.
+We will be using the Python\footnote{\url{https://www.python.org/}} programming language for the development, prototyping, and release of the system. Python is a mature dynamically-typed interpreted programming language with a rich ecosystem of libraries and frameworks, especially popular with academic staff and data scientists. Python fundamentally lags behind the competition in terms of raw speed and performance, but makes up for it with its ease of use and rich ecosystem. Wherever performance is desired, library developers instead implement core code in a more-performant language, and instead provide bindings for Python, thus making Python a viable choice even in terms of computing-heavy tasks. 
 
+Specifically, we use Python version 3.10.X as shipped by the Anaconda software package. We are aware that the most recent stable version of Python 3.11 brings non-negligible optimizations and faster execution speed for some Python scripts, however, in light of the fact that the Anaconda distribution is still shipping Python 3.10.X, and the fact that some packages have not been well-tested with Python 3.11, we opt to use that version for the time being. We will be using the Anaconda distribution as it is a very popular and mature distribution of Python, which is also very easy to install and use. It also comes with a large number of pre-installed packages, which will be very useful for the current developer experience.
+
+\subsection{NumPy}
+
+NumPy\footnote{\url{https://numpy.org/}} is a Python library for scientific computing. NumPy provides a variety of highly optimized data structures, as well as a large number of mathematical functions that can be applied to said data structures. It is a very popular library, and is widely used in the Python ecosystem. NumPy boasts a very mature library, with a large community of developers and researchers, leading to a very well-tested and well-documented product. Furthermore, because the core of NumPy is implemented in low-level programming languages, such as the C programming language, the performance of functions using methods in NumPy barely lags behind for math-heavy operations against even the fastest languages available. 
+
+NumPy addresses our fundamental need for a performant library for scientific computing. Implementing specific array data structures in NumPy enables us to severely cut down on performance time for math-heavy operations, as well as cut down on memory consumption. NumPy also interfaces easily with PyTorch, another library for high-performance computing, which we will be using for the implementation of the models used in the application.
 
 \subsection{PyTorch}
-PyTorch ``is a machine learning framework based on the Torch library, used for applications such as computer vision and natural language processing, originally developed by Meta AI and now part of the Linux Foundation umbrella. It is free and open-source software released under the modified BSD licence'', as described by \cite{enwiki:1146375871}.
+PyTorch is Python library for imperative-style high-performance computing, optimized for parallel operations on the GPU, and particularly applied for deep learning \citep{NEURIPS2019_9015_pytorch}. PyTorch is an open-source library with rich documentation, and many deep learning models have been implemented with it. The functions and models available within PyTorch are essential for the implementation of the heavyweight metrics we choose to implement. 
 
-Any models used in the application will be implemented in PyTorch, as it is a very popular framework for deep learning and natural language processing. It is also a very flexible framework, which allows for easy implementation of new models and algorithms. Furthermore, it is a very popular framework, which means that there is a large community of developers and researchers who have already implemented many of the algorithms we plan to use. This means that we can easily reuse their code and adapt it to our needs.
+Additionally, many of the freely available \acrfull{llm} architectures have already been implemented and are publicly available via high-level APIs interacting with the models. Thus, we can avoid implementing or reimplementing the LLM architectures on our own, and instead focus on the applications of the implemented package. Furthermore, any LLMs used in the application will be implemented in PyTorch.
+
 \subsubsection*{\textbf{Comparison with TensorFlow}}
+TensorFlow is a Python library for the same purpose as PyTorch -- to provide low- and high-level abstractions for efficient parallel computing, optimized for GPU operations, and implementations of deep learning scientific models. Anything one can achieve with PyTorch, they can achieve with TensorFlow, as well. Similarly, most of the common model architectures are also available as high level abstractions implemented in TensorFlow. In general, there are very few key differences between the two.
+
+Ultimately, however, we have opted to use PyTorch over TensorFlow for the following reasons:
+
+\begin{enumerate}
+    \item PyTorch is more popular in the academic community, and is more widely used in research. This means that there is a larger community of developers and researchers working with PyTorch, and a larger number of models implemented in PyTorch. 
+    \item Integration with NumPy. Because key computations in the project will be handled by NumPy, it is important that the library we use for high-performance computing integrates well with NumPy. PyTorch integrates very well with NumPy, and is able to convert NumPy arrays to PyTorch tensors with minimal effort.
+    \item PyTorch is more ``Pythonic'' than TensorFlow. This means that PyTorch is more intuitive to use, and the general coding style is more natural -- leading to an excellent developer experience.
+\end{enumerate}
+
 \subsection{NLP Frameworks}
+In this section, we evaluate a variety of available Python libraries for \acrfull{nlp} tasks, and discuss the reasoning behind our choice of the library we will be using in the application.
+
 \subsection*{NLTK}
 NLTK is a key Python library for natural language processing, primarily built for education purposes and managed as an open-source software, built to be relatively modular and lightweight. Commonly used by researchers and students for understanding and implementing algorithms for NLP tasks, it is a relatively popular and mature framework with a healthy extension ecosystem, where contributors are able to write their own modules and share them with the community.  
 
-NLTK 
+The strengths of NLTK include: 
+\begin{itemize}
+    \item A large number of modules for a variety of NLP tasks, including tokenization, stemming, tagging, parsing, and so on.
+    \item A large number of corpora and datasets for a variety of NLP tasks, including the Brown Corpus, the Penn Treebank, and so on.
+\end{itemize}
+
+\subsection*{TextBlob}
+TextBlob is an NLP library drawing heavy inspiration from algorithms available in NLTK, providing a higher-level abstraction for common NLP tasks. It is built to be easy to use, and provides a very intuitive API for common NLP tasks. It provides an easy interface for parsing and working with text on all levels, but it is somewhat lacking in terms of more advanced NLP tasks. Furthermore, development has stagnated and is rarely updated with new features or bug fixes.
+
 \subsection*{SpaCy}
-SpaCy is an open-source Python library for advanced natural language processing, designed to be easily used in production environments and implementing pipelines for enhanced NLP tasks. Whereas NLTK is primarily used for research and education, SpaCy is commonly being applied in industry environments. 
+SpaCy is an open-source Python library for advanced natural language processing, designed to be easily applied in production environments and implementing pipelines for enhanced NLP tasks. Whereas NLTK is primarily used for research and education, SpaCy is commonly being applied in industry environments. SpaCy is in active development and enjoys a large community of developers and researchers.
+
+The strengths of SpaCy include:
+\begin{itemize}
+    \item pretrained pipelines currently supporting tokenization and training for 70+ languages
+    \item state-of-the-art speed and neural network models for tagging, parsing, named entity recognition, text classification and more
+    \item multi-task learning with pretrained transformers like BERT, as well as a production-ready training system and easy model packaging, deployment and workflow management.
+\end{itemize}
 
 \subsection*{Comparison between NLTK and SpaCy}
+
+We draw a few differences between NLTK and SpaCy in the context of our application. We ignore TextBlob, as it has most of the capabilities of NLTK but seems to have stagnated in development. The two frameworks were compared across the following criteria:
+
+\begin{enumerate}
+    \item \textbf{Ease of Use.} Both frameworks are relatively easy to use, but SpaCy is built as an NLP Swiss army-knife not just for production, but all tasks. NLTK, on the other hand, requires some reading and understanding of the underlying algorithms to be used effectively.
+    \item \textbf{Performance.} Both frameworks perform relatively similarly in performance for key algorithms such as tokenization and tagging. A lot of the SpaCy key code has been implemented in Cython, a static compiler for Python providing magnitudes of speed improvements over regular Python, in theory making it faster for certain applications. We do not account for the performance of text processing pipeline modules using neural networks, as we will not be using those in the application. In the limited testing we did, we did not find a significant advantage for the simple use case we had for an NLP framework. Therefore, this criterion is a tie. 
+    \item \textbf{Memory Consumption.} SpaCy inherently requires more memory as it does much more than tokenization internally and stores more information about the text. Modules utilizing NLTK algorithms, on the other hand, are more lightweight and can be selected to use less memory. Table \ref{tab:spacy_vs_nltk} lists a small-scale experiment we carried out to compare the memory consumption of the two frameworks.
+\end{enumerate}
+
+It is unlikely that we will use all capabilities that both of SpaCy and TextBlob provide straight out from the box. We can, therefore, avoid the overhead of the other two frameworks, and instead use NLTK and choose which modules we use selectively. Thus, our NLP framework of choice is NLTK.
+
 \begin{table}[htbp]
     \centering
         \begin{tabular}{lrr}
@@ -66,26 +149,32 @@ SpaCy is an open-source Python library for advanced natural language processing,
             Framework  &  Peak Memory  &     Increment \\
             \midrule
                 SpaCy  &  5089.13 MiB  &   4465.29 MiB \\
-            Mad Hatter &  434.81 MiB   &     48.75 MiB \\
+                NLTK &  434.81 MiB   &     48.75 MiB \\
             \bottomrule
             \end{tabular}
-    \caption{<caption>}
-    \label{<label>}
+    \caption{We carried out a small experiment to compare the memory consumption of SpaCy and NLTK. We prepared a subset of 1000 book files and only opted to tokenize and tag the words of each, and store both as simple Python lists. We ran the experiment in parallel with multiple ($n=16$) processes, to simulate a real use case we would have for the frameworks. A Python process running SpaCy, unfortunately, even when stripped down to a minimal pipeline, consumes massive amounts of memory. We can see that the memory consumption of SpaCy is almost 10 times that of NLTK. }
+    \label{tab:spacy_vs_nltk}
 \end{table}
+
 
 \section{Code Style}
 \subsection{PEP8}
-We will be using PEP8\footnote{\url{https://peps.python.org/pep-0008}} \citep{pep8} as our code style guide. PEP8 is a style guide for Python code, which is maintained by the Python Software Foundation. It is a very popular, and comprehensive style guide, widely used by many Python developers and organizations. It covers a wide range of topics, including naming conventions, indentation, line length, whitespace, comments, ``docstrings'' (short for documentation strings, or, more specifically, comments that explain the way a given procedure or a class works, inside the code itself), and so on.
+We will be using PEP8\footnote{\url{https://peps.python.org/pep-0008}} \citep{pep8} as our code style guide. PEP8 is a style guide for Python code, which is maintained by the Python Software Foundation. It is a very popular, and comprehensive style guide, widely used by many Python developers and organizations. It covers a wide range of topics, including naming conventions, indentation, line length, whitespace, comments, ``docstrings'' (short for documentation strings, or, more specifically, comments that explain the way a given procedure or a class works, inside the code itself), and so on. Furthermore, we encourage the usage of type hints in function definitions as well as the usage of type annotations in docstrings.
 \subsection{Docstrings}
+We use NumPy's code style guide for documenting classes and functions\footnote{\url{https://numpydoc.readthedocs.io/en/latest/format.html}}. Using NumPy's style guide provides a clear and concise way of documenting the parameters and return values of functions and methods. It also has the added benefit of being familiar with other developers and researchers, as NumPy is a very popular library in the Python ecosystem, therefore potential users will be familiar with IDE-provided Intellisense help pop-ups on function definitions. Finally, it is handy as potential usage of a static documentation generator such as Sphinx\footnote{\url{https://www.sphinx-doc.org/en/master/}} is made easier, as Sphinx is able to parse NumPy-style docstrings and generate documentation from them.
+
 \subsection{Linting}
+As part of the development process, we set up an automated linting service inside the IDE using the Pylint linter \footnote{\url{https://www.pylint.org/}}. Pylint checks for errors in the code, as well as enforces the PEP8 code style guide. It also provides a variety of other checks, such as checking for unused imports, checking for unused variables, checking for undefined variables, and so on. We also use the Pylance language server\footnote{\url{https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance}} for the Visual Studio Code IDE, which provides a variety of other checks, such as type checking, and so on.
+
 \subsection{Testing}
+
+
 \subsection{Code Review}
 \subsection{Version Control}
 The outlined project 
 \subsubsection{Git and GitHub}
 
 \section{Documentation}
-\subsection{Documentation Framework}
 We use Sphinx in this household.
 \subsection{Sphinx}
 

@@ -25,6 +25,7 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{multirow}
+\usepackage{listings}
 
 \usepackage[T1]{fontenc}
 
@@ -92,7 +93,9 @@
 
 \tableofcontents
 
-\printglossary[type=\acronymtype]
+\clearpage
+\printnoidxglossary[type=\acronymtype,sort=standard, nonumberlist, title=Abbreviations]
+\clearpage
 
 %\listoftables
 %\listoffigures
@@ -109,6 +112,9 @@
 
 \appendix
 % \include{proof}
+
+\include{sections/user_manual.tex}
+\include{sections/maintenance_manual.tex}
 
 \bibliography{bibliography}
 

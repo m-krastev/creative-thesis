@@ -14,3 +14,5 @@ DGT-Acquis
 multiclass
 SVMs
 val
+nlp
+TextBlob

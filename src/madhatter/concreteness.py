@@ -1,4 +1,4 @@
-from madhatter.utils import _ratings
+from madhatter.typings.utils import _ratings
 
 
 import pandas as pd

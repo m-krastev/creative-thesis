@@ -1,0 +1,81 @@
+\chapter{User Manual}
+The following user manual lists and explains the features of the Mad Hatter package. It also provides a guide on how to install and use the package, as well as how to use the command-line interface. The guide assumes that the user \textbf{has installed Python 3.7+}, and has access to a terminal.
+
+\section{Installation}
+
+Run the following command to install the package and its dependencies:
+
+\begin{lstlisting}[language=bash]
+    pip install madhatter
+\end{lstlisting}
+
+We highly recommend also running NLTK's downloader module in order to have access to all of the features that Mad Hatter provides. To do so, simply run the following command:
+
+\begin{lstlisting}[language=bash]
+    python -m nltk.downloader all
+\end{lstlisting}
+
+
+\subsection{Usage}
+
+The package provides high-level abstractions for text analysis that can be used with any text. The following example shows how to use the package to analyse a simple text file within Python:
+
+\begin{lstlisting}[language=python, breaklines]
+from madhatter.benchmark import CreativityBenchmark
+
+text = "The quick brown fox jumped over the lazy dog."
+bench = CreativityBenchmark(text)
+
+bench.report()
+>>> BookReport(title='unknown', nwords=10, mean_wl=3.7, mean_sl=45.0, mean_tokenspersent=10.0, prop_contentwords=0.1, mean_conc=4.0633333333333335, mean_img=5.359999999999999, mean_freq=-1.6792249660842167, prop_pos={'ADJ': 0.2, 'NOUN': 0.3, 'VERB': 0.1}, surprisal=None, predictability=None)
+\end{lstlisting}
+
+
+\subsection{Command Line Interface}
+Mad Hatter is also available as a CLI tool. Simply provide a path to a text file to the CLI, and it will generate a report for that text. Table \ref{tab:cli_options} lists the available options to the CLI. The CLI must be supplied a filename or a path to the file to be analysed. 
+The following example shows how to use the CLI to generate a report for an arbitrary text file:
+
+\begin{lstlisting}[language=bash, breaklines]
+> python -m madhatter text.txt -p -m 100 -c 20 -t "My Text"
+
+BookReport(title='My Text', nwords=100, mean_wl=3.7, mean_sl=45.0, mean_tokenspersent=10.0, prop_contentwords=0.1, mean_conc=4.0633333333333335, mean_img=5.359999999999999, mean_freq=-1.6792249660842167, prop_pos={'ADJ': 0.2, 'NOUN': 0.3, 'VERB': 0.1}, surprisal=None, predictability=None)
+\end{lstlisting}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{lllp{0.6\textwidth}}
+        \toprule
+        Short & Long Form & Default & Description \\
+        \midrule
+        \texttt{-h} & \verb|--help| & & Show a help message and exit the program.\\
+        \texttt{-p} & \verb|--postag| & & Whether to return a POS tag distribution over the whole text. The option is a flag, so it only needs to be added. \\
+        \texttt{-u} & \verb|--usellm| & & Whether to run GPU-intensive LLMs for additional characteristics. The option is a flag, so it only needs to be added. \\
+        \texttt{-m} & \verb|--maxtokens| & -1 & Maximum number of predicted words for the heavyweight metrics. Count starts from the beginning of text, -1 to read until the end. \\
+        \texttt{-c} & \verb|--context| & 10 & Context length for sliding window predictions as part of heavyweight metrics. Longer context for better results, but may potentially result longer compute times.\\
+        \texttt{-t} & \verb|--title| & 
+         & Optional title to use for the report project. If not supplied, the name of the file supplied is used in the book report.\\
+        \texttt{-d} & \verb|--tagset| & universal & Tagset to use. Default is the universal tagset.\\
+        \bottomrule
+      
+    \end{tabular}
+    \caption{Available options to the CLI.}\label{tab:cli_options}
+\end{table}
+
+
+\subsection{Advanced Usage}
+
+Users are also able to use the package's lower-level functions to create their own custom analysis pipeline or to integrate with other NLP packages such as \href{https://github.com/explosion/spaCy}{SpaCy}.
+
+\begin{lstlisting}[language=python, breaklines]
+    from madhatter import metrics
+    from madhatter import benchmark
+    
+    text = "The quick brown fox jumped over the lazy dog."
+    bench = benchmark.CreativityBenchmark(text)
+    
+    bench.words
+    >>> ['The', 'quick', 'brown', 'fox', 'jumped', 'over', 'the', 'lazy', 'dog', '.']
+    
+    metrics.imageability(bench.words)
+    >>> [1.41, 2.45, 3.14, 4.2, 3.4, 3.65, 1.41, 2.42, 4.1, 0.0]
+\end{lstlisting}

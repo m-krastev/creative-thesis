@@ -3,10 +3,10 @@ Base file for LLM operations on text.
 """
 
 # Initialize models
-from typing import Any, Literal, NamedTuple
 
-from nltk import word_tokenize, pos_tag
 import torch
+from nltk import pos_tag, word_tokenize
+from typing import Any, Literal, NamedTuple
 
 
 class Prediction(NamedTuple):
@@ -71,7 +71,7 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
     mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[
         0].nonzero(as_tuple=True)[0]
 
-    vals, predicted_token_ids = torch.topk(# pylint: disable=no-member
+    vals, predicted_token_ids = torch.topk(  # pylint: disable=no-member
         logits[0, mask_token_index], max_preds, dim=-1)
 
     ret = []
@@ -227,9 +227,10 @@ def default_model(model_name="bert-base-uncased"):
 
     return BertForMaskedLM.from_pretrained(model_name), AutoTokenizer.from_pretrained(model_name)
 
+
 def default_word2vec():
     import gensim
     from nltk.data import find
-    
+
     return gensim.models.KeyedVectors.load_word2vec_format(
-    str(find('models/word2vec_sample/pruned.word2vec.txt')), binary=False)
+        str(find('models/word2vec_sample/pruned.word2vec.txt')), binary=False)

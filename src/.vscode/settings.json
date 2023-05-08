@@ -1,6 +1,6 @@
 {
     "python.analysis.typeCheckingMode": "basic",
-    "python.linting.pylintEnabled": true,
+    "python.linting.pylintEnabled": false,
     "cmake.configureOnOpen": false,
     "python.linting.pylintArgs": [
         "--max-line-length=200"
