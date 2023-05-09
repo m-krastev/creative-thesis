@@ -471,4 +471,9 @@ src/plots
 src/madhatter/static/**
 
 mprofile**
-src/gutenberg
+**gutenberg**
+**plots**
+# **results**
+**static**
+**data**
+**_build**
