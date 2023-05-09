@@ -1,2 +1,68 @@
 \chapter{Implementation}
 \label{sec:implementation}
+In the following chapter, we finally introduce the \textsc{Mad Hatter} package, a Python package for the analysis of linguistic features in text. The name borrows from the famous character of one of Lewis Carroll's most known works, ``Alice in Wonderland''. The Mad Hatter is a quirky character prone to speak in riddles and nonsensical sentences. The name is a nod to the fact that the package is designed to analyse creative text, and the Mad Hatter is a character that is often associated with (unconventional) creativity. 
+
+\begin{quote}
+    ``We're all mad here. I'm mad. You're mad.'' -- the Cheshire Cat, \textit{Alice in Wonderland}
+\end{quote}
+
+Nonetheless, we detail the steps we undertook to realize the project into a fully fledged package, along with its dependencies, usage examples, and a detailed description of the package structure. Furthermore, we provide justifications for the design choices we made and how the code has been implemented to be as efficient, modular and extensible as possible. 
+
+\section{Package Structure}
+
+\textsc{Mad Hatter} is divided into several modules, each of which is responsible for a specific task. The package has been built to be as modular as possible to allow for easy extensibility and maintainability. The divisions are as follows:
+
+\begin{itemize}
+    \item \texttt{benchmark}: contains the benchmarking suite, which is responsible for the evaluation of the text. The main class of \texttt{CreativityBenchmark} lives here.
+    \item \texttt{loaders}: contains the data preprocessing pipeline and methods for downloading and loading static assets needed for either downloading testing suites or, more essentially, assets for benchmarking the text. 
+    \item \texttt{models}: contains methods for accessing language models that may be used if not otherwise supplied by the user themselves. 
+    \item \texttt{utils}: contains utility functions used throughout the package.
+    \item \texttt{metrics}: contains key metrics used throughout the package for the evaluation of the text.
+    \item \texttt{\_\_init\_\_.py}: the main entrypoint of the package. It bootstraps all essential modules and exposes the main classes and methods of the package to the user, for example, when they call \texttt{import madhatter} in their code.
+    \item \texttt{\_\_main\_\_.py}: the main entrypoint of the package when used as a CLI tool. It is responsible for parsing the command line arguments and calling the appropriate methods to generate the report.
+\end{itemize}
+
+
+The main code can be found in the \texttt{src/madhatter} directory. The files ending in the \texttt{.py} extension are the ones responsible for the actual implementation of the project, whilst the mirror files ending in the \texttt{.pyi} extension are stub files meant to complement the actual implementation files with type annotations. The stub files are used by the \texttt{mypy} type checker to ensure that the code is type-safe, along with other code analysis tools to provide rich type information for other developers using the package.
+Figure \ref{fig:package_structure} provides a high-level overview of the main structure of the package.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../src/plots/packages.png}
+    \caption{Detailed separation of the modules \textsc{Mad Hatter} is divided into along with their dependencies.}
+    \label{fig:package_structure}
+\end{figure}
+
+\section{Text Processing Pipeline}
+The main class for the text processing pipeline is the \texttt{CreativityBenchmark} class. Upon initialization with a given text, the class preprocesses the text, as follows:
+
+\begin{table}[htbp]
+    \begin{tabular}{p{0.2\textwidth}p{0.7\textwidth}}
+        \toprule
+        \textbf{Step} & \textbf{Description} \\
+        \midrule
+        Tokenization & Splitting the text into tokens, those being words (list of words), sentences (list of sentences), and words in sentences (list of words in list of sentences) \\
+        Tagging & Assigning a part-of-speech tag to each token, e.g. ``running'' $\to$ ``verb'' \\
+        Lemmatization & Converting the tokens to their base form, e.g. ``running'' $\to$ ``run'' \\
+        Stopword Removal & Removing stopwords, e.g. ``the'', ``a'', ``an'', etc. \\
+        \bottomrule
+        
+    \end{tabular}
+    \caption{The steps of the text processing pipeline.}
+\end{table}
+
+The process can be visualized in Figure \ref{fig:processing_pipeline}. 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../src/plots/pipeline.png}
+    \caption{Example text processing pipeline. Resource provided by SpaCy documentation contributors.}\label{fig:processing_pipeline}
+\end{figure}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{../src/plots/classes.png}
+    \caption{Available classes in \textsc{Mad Hatter} along with their class and instance methods and variables. }
+\end{figure}
+
