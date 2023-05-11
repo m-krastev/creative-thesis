@@ -77,6 +77,8 @@ class CreativityBenchmark:
         # Initialize a list to hold the POS tag counts for each sentence
         self.postag_counts: list[nltk.FreqDist] = []
         self.title = title
+        
+        self._tagged_words: list[tuple[str,str]] | None = None
 
     def ngrams(self, n, **kwargs):
         """Returns ngrams for the text."""
@@ -99,8 +101,13 @@ class CreativityBenchmark:
 
             return self.postag_counts
 
+    @property
     def tagged_words(self):
-        return list(chain.from_iterable(self.tagged_sents))
+        if self._tagged_words is not None:
+            return self._tagged_words
+        
+        self._tagged_words = list(chain.from_iterable(self.tagged_sents))
+        return self._tagged_words
 
     def book_postag_counts(self, tagset: Optional[str] = None) -> nltk.FreqDist:
         """Get a counter object for the Parts of Speech in the whole book."""
@@ -178,7 +185,7 @@ class CreativityBenchmark:
         ax.stackplot(xnew, *graphs, labels=df.columns, linewidth=0.1,
                      colors=sns.color_palette("deep", n_colors=df.shape[1], as_cmap=True))
 
-        ax.set(xbound=(0, df.shape[0]), ylim=(0, 1), title='Parts of Speech in Emma',
+        ax.set(xbound=(0, df.shape[0]), ylim=(0, 1), title=f'Parts of Speech in {self.title}',
                xlabel='Sentence #', ylabel='Proportion of sentence')
         ax.xaxis.set_major_formatter(plt.FuncFormatter(  # type: ignore
             lambda x, loc: f"{x/df.shape[0]:.0%}"))
@@ -348,7 +355,7 @@ class CreativityBenchmark:
         return _ratings(self.lemmas(), get_imageability_df("dict")) if lemmas is None else _ratings(lemmas, get_imageability_df("dict"))
 
 
-    def report(self, print_time=True, postag_distribution=True, heavyweight_metrics=False, n = 1000, model = None, tokenizer = None, k = 10, word2vec_model=None) -> BookReport:
+    def report(self, print_time=False, postag_distribution=True, heavyweight_metrics=False, n = 1000, model = None, tokenizer = None, k = 10, word2vec_model=None) -> BookReport:
         """
             Generates a report for the text.
         """
@@ -383,8 +390,7 @@ class CreativityBenchmark:
         if heavyweight_metrics is True:
             if model is None or tokenizer is None:
                 model, tokenizer = default_model()
-            preds = sliding_window_preds_tagged(self.tagged_words(
-            )[:n], model, tokenizer, return_tokens=True, k=k, tags_of_interest=self.tags_of_interest, stopwords=stopwords)
+            preds = sliding_window_preds_tagged(self.tagged_words[:n], model, tokenizer, return_tokens=True, k=k, tags_of_interest=self.tags_of_interest, stopwords=stopwords)
                         
             _surprisal = surprisal(preds, word2vec_model)
             
@@ -398,3 +404,42 @@ class CreativityBenchmark:
             print(f"Report took ~{time() - time_now:.3f}s")
 
         return result
+
+
+    def plot_report(self, global_dist: BookReport, categories: list[str] = ["mean_wl", "mean_sl", "prop_contentwords", "mean_conc", "mean_img", "mean_freq"], **report_args):
+
+        report = self.report(**report_args)
+
+        # number of variable
+        N = len(categories)
+
+        dfnp = np.array([getattr(report, cat) for cat in categories])
+        norm = np.array([getattr(global_dist, cat) for cat in categories])
+
+        dfnorm = dfnp / norm
+
+        # But we need to repeat the first value to close the circular graph:
+        values = dfnorm
+        values = np.append(values, values[0])
+
+        # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
+        angles = np.arange(N) * 2 * np.pi / N
+        angles = np.append(angles, angles[0])
+
+        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, dpi=200)
+
+        # Draw one axe per variable + add labels
+        ax.set_xticks(angles[:-1], categories, color='grey', size=8)
+        # Draw ylabels
+        ax.set(rlabel_position=0)
+        yticks = np.linspace(0, 1, 5)
+        ax.set_yticks(yticks, yticks, color="grey", size=7)
+        ax.set_ylim(0, 1)
+
+        # Plot data
+        ax.plot(angles, values, linewidth=1, linestyle='solid')
+
+        # Fill area
+        ax.fill(angles, values, 'b', alpha=0.1)
+
+        return fig, ax

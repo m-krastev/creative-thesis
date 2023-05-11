@@ -92,6 +92,9 @@ def get_freq_df(_format) -> pd.DataFrame | dict:
     replacements = [("No", "NOUN"), ("Adv", "ADV"),
                     ("Adj", "ADJ"), ("Verb", "VERB")]
     df_freq = replace_df(df_freq, "PoS", replacements)
+    
+    # Scale logarithmically for a better result
+    df_freq["Freq"] = np.log10(df_freq["Freq"])
 
     if _format == "df":
         return df_freq
@@ -105,7 +108,7 @@ def get_freq_df(_format) -> pd.DataFrame | dict:
 
     # df_freq_dict = dict(zip(((x,y) for x, y in zip(df_freq.index, df_freq["PoS"]) if y in TAGS_OF_INTEREST), df_freq["Freq"])) # 5600 entries
 
-    return dict(zip(df_freq.index, -np.log10(df_freq["Freq"])))  # 5900 entries
+    return dict(zip(df_freq.index, df_freq["Freq"]))  # 5900 entries
 
 
 stopwords = {'of', 'been', "hadn't", "isn't", 'i', 'this', 'these', 'were', 'the', 'and', 'by', 'don', 'm', 'o', "wasn't", 'we', 'all', 'same', 'not', 'weren', 'at', 'those', 'few', 'shan', 'a', 'through', 'ain', 'its', 'how', "that'll", 'ours', 'you', 'here', 'nor', "weren't", 'myself', 'aren', 'why', "didn't", 'having', 'for', 'so', 'she', "mightn't", 'in', 'haven', 't', 'being', 'yourself', 'an', 'to', 'didn', 'between', 'them', "couldn't", "mustn't", 'itself', 'is', 'only', "aren't", 'very', "you'll", 'had', 'into', 'if', 'their', 'mustn', 'off', 'what', 'd', 'as', 'ourselves', 'that', 'hasn', 'each', 'me', 'below', "haven't", 'wouldn', 'shouldn', 'there', 'your', 'or', 'such', 'because', 'during', 'yourselves', 'other', 'hadn',

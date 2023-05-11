@@ -124,7 +124,7 @@ def load_imageability() -> Path:
     Loads the imageability dataset from Cortese et al. (2004) and returns the path to the file.
     """
 
-    im_path = Path(__package__) / "static" / \
+    im_path = Path(__file__).parent / "static" / \
         "imageability" / "cortese20004norms.csv"
 
     if not im_path.exists():
@@ -138,7 +138,7 @@ def load_imageability() -> Path:
     return im_path
 
 def load_concreteness() -> Path:
-    conc_path = Path(__package__) / "static" / \
+    conc_path = Path(__file__).parent / "static" / \
         "concreteness" / "concreteness.csv"
 
     if not conc_path.exists():
@@ -155,7 +155,7 @@ def load_freq() -> Path:
     Path
         _description_
     """
-    freq_path = Path(__package__) / "static" / \
+    freq_path = Path(__file__).parent / "static" / \
         "frequency" / "frequency.csv"
 
     if not freq_path.exists():
