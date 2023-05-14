@@ -5,18 +5,14 @@ from typing import Any, Literal, overload
 
 def sent_predictions(sent: str | list[str], bench: Any, model: Any, tokenizer: Any, return_tokens: bool = True, k: int = ...) -> list[Prediction]: ...
 
-@overload
-def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: Literal[False], k: int = ...) -> list[float]: ...
-
-@overload
-def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: Literal[True] = True, k: int = ...) -> list[tuple[str,float]]: ...
+def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: bool = True, k: int = ...) -> tuple[list[float], list[str]]: ...
 
 
 class Prediction(NamedTuple):
     word: str
     original_tag: str
-    suggestions: tuple[str]
-    probs: tuple[float]
+    suggestions: list[str]
+    probs: list[float]
     def __bool__(self) -> bool: ...
 
 

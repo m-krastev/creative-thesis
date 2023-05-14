@@ -1,3 +1,4 @@
 {"rule":"SENTENCE_WHITESPACE","sentence":"^\\QX as shipped by the Anaconda software package.\\E$"}
 {"rule":"SENTENCE_WHITESPACE","sentence":"^\\QX, we will be using that version for the time being.\\E$"}
 {"rule":"MORFOLOGIK_RULE_EN_GB","sentence":"^\\QTherefore, in tasks such as part of speech (PoS) tagging, some algorithms prefer to use the most common type of PoS Firstly, most of the work that goes on in our minds as we read a given text is unconscious and automatic.\\E$"}
+{"rule":"THE_SUPERLATIVE","sentence":"^\\QThe model returns a probability distribution over the vocabulary, and we take the top K likeliest words (sorted by likelihood to be the masked word) and compute the entropy of the distribution.\\E$"}

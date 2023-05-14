@@ -14,20 +14,20 @@ class Prediction(NamedTuple):
     ```
     word: str
     original_tag: str
-    suggestions: tuple[str]
-    probs: tuple[float]
+    suggestions: list[str]
+    probs: list[float]
     ```
     """
     word: str
     original_tag: str
-    suggestions: tuple[str]
-    probs: tuple[float]
+    suggestions: list[str]
+    probs: list[float]
 
     def __bool__(self):
         return len(self.suggestions) == len(self.probs)
 
 
-def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: bool = False, max_preds: int = 20) -> list[float] | list[tuple[str, float]]:
+def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens: bool = True, max_preds: int = 20) -> tuple[list[float], list[str]]:
     """
     Predict the top k tokens that could replace the masked word in the sentence. 
 
@@ -75,6 +75,7 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
         logits[0, mask_token_index], max_preds, dim=-1)
 
     ret = []
+    ret_tokens = []
     for i, predicted_token_id in enumerate(predicted_token_ids[0]):
         # if the actual tokens are needed, return those as well
         if return_tokens is True:
@@ -83,11 +84,11 @@ def predict_tokens(sent: str, masked_word: str, model, tokenizer, return_tokens:
             # If word is a subword, combine it with the previous word
             word = word if not word.startswith("##") else masked_word+word[2:]
 
-            ret.append((word, vals[0, i].item()))
-        else:
-            ret.append(vals[0, i].item())
+            ret_tokens.append(word)
+            
+        ret.append(vals[0, i].item())
 
-    return ret
+    return ret, ret_tokens
 
 
 def sent_predictions(sent: str | list[str], model: Any, tokenizer: Any, return_tokens: Literal[True, False] = False, k: int = 20, stopwords: set | None = None, tags_of_interest: set | None = None) -> list[Prediction]:
@@ -117,19 +118,11 @@ def sent_predictions(sent: str | list[str], model: Any, tokenizer: Any, return_t
         # Early stopping
         if word in stopwords or tag not in tags_of_interest:
             continue
-
-        if return_tokens is True:
-            toks = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=True, max_preds=k)
-            predicted_words, predicted_tokens = list(zip(*toks))
-
-            results.append(Prediction(
-                word, tag, predicted_words, predicted_tokens))  # type: ignore
-        else:
-            predicted_tokens = predict_tokens(
+        
+        probs, tokens = predict_tokens(
                 sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=k)
-            results.append(Prediction(
-                word, tag, [], predicted_tokens))  # type: ignore
+
+        results.append(Prediction(word, tag, tokens, probs))
 
     return results
 
@@ -159,18 +152,10 @@ def sliding_window_preds_tagged(words: list[tuple[str, str]], model: Any, tokeni
         sent_tuples = words[i-k:i+k]
         sent = " ".join(_[0] for _ in sent_tuples)
 
-        if return_tokens is True:
-            toks = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=True, max_preds=max_preds)
-            predicted_words, predicted_tokens = list(zip(*toks))
+        probs, tokens = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=k)
 
-            results.append(Prediction(
-                word, tag, predicted_words, predicted_tokens))  # type: ignore
-        else:
-            predicted_tokens = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=max_preds)
-            results.append(Prediction(
-                word, tag, [], predicted_tokens))  # type: ignore
+        results.append(Prediction(word, tag, tokens, probs))
 
     return results
 
@@ -206,18 +191,11 @@ def sliding_window_preds(_words: list[str], model: Any, tokenizer: Any, return_t
         sent_tuples = words[i-k:i+k]
         sent = " ".join(_[0] for _ in sent_tuples)
 
-        if return_tokens is True:
-            toks = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=True, max_preds=max_preds)
-            predicted_words, predicted_tokens = list(zip(*toks))
+        probs, tokens = predict_tokens(
+                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=k)
 
-            results.append(Prediction(
-                word, tag, predicted_words, predicted_tokens))  # type: ignore
-        else:
-            predicted_tokens = predict_tokens(
-                sent, word, model, tokenizer, return_tokens=return_tokens, max_preds=max_preds)
-            results.append(Prediction(
-                word, tag, [], predicted_tokens))  # type: ignore
+        results.append(Prediction(word, tag, tokens, probs))
+
 
     return results
 

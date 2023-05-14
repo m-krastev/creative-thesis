@@ -355,7 +355,7 @@ class CreativityBenchmark:
         return _ratings(self.lemmas(), get_imageability_df("dict")) if lemmas is None else _ratings(lemmas, get_imageability_df("dict"))
 
 
-    def report(self, print_time=False, postag_distribution=True, heavyweight_metrics=False, n = 1000, model = None, tokenizer = None, k = 10, word2vec_model=None) -> BookReport:
+    def report(self, print_time=False, include_pos=True, include_llm=False, n = 1000, model = None, tokenizer = None, k = 10, word2vec_model=None) -> BookReport:
         """
             Generates a report for the text.
         """
@@ -378,7 +378,7 @@ class CreativityBenchmark:
         freq = [_ for _ in self.frequency_ratings(lemmas) if _]
         freq_num = mean(freq)
 
-        if postag_distribution:
+        if include_pos:
 
             # The postagging takes a while
             postag_counts = self.book_postag_counts()
@@ -387,7 +387,7 @@ class CreativityBenchmark:
                            val in postag_counts.items() if tag in self.tags_of_interest}
 
         _surprisal, _predictability = None, None
-        if heavyweight_metrics is True:
+        if include_llm is True:
             if model is None or tokenizer is None:
                 model, tokenizer = default_model()
             preds = sliding_window_preds_tagged(self.tagged_words[:n], model, tokenizer, return_tokens=True, k=k, tags_of_interest=self.tags_of_interest, stopwords=stopwords)

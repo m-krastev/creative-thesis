@@ -89,7 +89,7 @@ NumPy\footnote{\url{https://numpy.org/}} is a Python library for scientific comp
 
 NumPy addresses our fundamental need for a performant library for scientific computing. Implementing specific array data structures in NumPy enables us to severely cut down on performance time for math-heavy operations, as well as cut down on memory consumption. NumPy also interfaces easily with PyTorch, another library for high-performance computing, which we will be using for the implementation of the models used in the application.
 
-\subsection{PyTorch}
+\subsection{PyTorch}\label{sec:pytorch}
 PyTorch is Python library for imperative-style high-performance computing, optimized for parallel operations on the GPU, and particularly applied for deep learning \citep{NEURIPS2019_9015_pytorch}. PyTorch is an open-source library with rich documentation, and many deep learning models have been implemented with it. The functions and models available within PyTorch are essential for the implementation of the heavyweight metrics we choose to implement. 
 
 Additionally, many of the freely available \acrfull{llm} architectures have already been implemented and are publicly available via high-level APIs interacting with the models. Thus, we can avoid implementing or reimplementing the LLM architectures on our own, and instead focus on the applications of the implemented package. Furthermore, any LLMs used in the application will be implemented in PyTorch.
@@ -160,11 +160,11 @@ It is unlikely that we will use all capabilities that both of SpaCy and TextBlob
     \caption{Comparison between SpaCy and NLTK in a batch processing scenario. The simple task was to tokenize the text into words, sentences, and to POS tag the words. We used 1800 texts of length up to 100000 characters each.
     For SpaCy, we used the \texttt{pipeline} method, and for NLTK we set up a simple pipeline using Python's built-in \texttt{multiprocessing} module.}\label{fig:spacy_vs_nltk}
     \begin{subfigure}[t]{1\textwidth}
-        \includegraphics[height=2.5in]{../src/plots/spacy.png}
+        \includegraphics[height=2.5in]{../src/notebooks/plots/spacy.png}
         \caption{Performance of SpaCy. Black line represents cumulative memory usage for the parent process. Seems to vary quite a bit and has a tendency to eat away memory.}
     \end{subfigure}
     \begin{subfigure}[t]{1\textwidth}
-        \includegraphics[height=2.5in]{../src/plots/multiprocessing.png}
+        \includegraphics[height=2.5in]{../src/notebooks/plots/multiprocessing.png}
         \caption{Performance of NLTK default subset of features with \texttt{multiprocessing}. Black line represents cumulative memory usage for the parent process. Relatively stable throughout and predictable. Each process only holds about as much memory as a standalone Python process.}
     \end{subfigure}
 \end{figure}

@@ -1,5 +1,5 @@
 \chapter{Implementation}
-\label{sec:implementation}
+\label{chap:implementation}
 In the following chapter, we finally introduce the \textsc{Mad Hatter} package, a Python package for the analysis of linguistic features in text. The name borrows from the famous character of one of Lewis Carroll's most known works, ``Alice in Wonderland''. The Mad Hatter is a quirky character prone to speak in riddles and nonsensical sentences. The name is a nod to the fact that the package is designed to analyse creative text, and the Mad Hatter is a character that is often associated with (unconventional) creativity. 
 
 \begin{quote}
@@ -8,33 +8,75 @@ In the following chapter, we finally introduce the \textsc{Mad Hatter} package, 
 
 Nonetheless, we detail the steps we undertook to realize the project into a fully fledged package, along with its dependencies, usage examples, and a detailed description of the package structure. Furthermore, we provide justifications for the design choices we made and how the code has been implemented to be as efficient, modular and extensible as possible. 
 
+\section{File Structure}
+
+The source code is structured as follows:
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{p{0.2\textwidth}p{0.1\textwidth}p{0.6\textwidth}}
+        \toprule 
+        \textbf{Item} & \textbf{Type}  & \textbf{Description} \\
+        \midrule
+        \textbf{docs} & Directory & Contains the documentation code for the package. \\
+        \textbf{madhatter} & Directory & Contains the source code for the package. \\
+        \textbf{notebooks} & Directory & Contains the Jupyter notebooks used for the project. \\
+        \textbf{tests} & Directory & Contains the unit tests for the package. \\
+        \textbf{.gitignore} & File & Contains the files to be ignored by Git. \\
+        \textbf{.readthedocs.yaml} & File & Contains the configuration for ReadTheDocs' generator. \\
+        \textbf{LICENSE} & File & Contains the licence for the package. \\
+        \textbf{pyproject.toml} & File & Contains the configuration for the package. Additionally used by PyPi for managing dependencies and displaying basing info to potential users. \\
+        \textbf{README.md} & File & Contains a basic user guide for the package. \\
+
+    \end{tabular}
+\end{table}
+
+The file structure is organized in a way that should be familiar to more experienced Python developers and package maintainers, and enables user contributions in the future as we move on to share the package on the Python Package Index (PyPI) and share the source code on GitHub. As described above, the \texttt{madhatter} directory contains the complete source code for the package specifically. The other files complement it and ensure that the package is easily accessible to potential users via documentation and tests. Keeping this in mind, we can proceed to describe the structure of the package source code in more detail.
+
 \section{Package Structure}
 
 \textsc{Mad Hatter} is divided into several modules, each of which is responsible for a specific task. The package has been built to be as modular as possible to allow for easy extensibility and maintainability. The divisions are as follows:
 
-\begin{itemize}
-    \item \texttt{benchmark}: contains the benchmarking suite, which is responsible for the evaluation of the text. The main class of \texttt{CreativityBenchmark} lives here.
-    \item \texttt{loaders}: contains the data preprocessing pipeline and methods for downloading and loading static assets needed for either downloading testing suites or, more essentially, assets for benchmarking the text. 
-    \item \texttt{models}: contains methods for accessing language models that may be used if not otherwise supplied by the user themselves. 
-    \item \texttt{utils}: contains utility functions used throughout the package.
-    \item \texttt{metrics}: contains key metrics used throughout the package for the evaluation of the text.
-    \item \texttt{\_\_init\_\_.py}: the main entrypoint of the package. It bootstraps all essential modules and exposes the main classes and methods of the package to the user, for example, when they call \texttt{import madhatter} in their code.
-    \item \texttt{\_\_main\_\_.py}: the main entrypoint of the package when used as a CLI tool. It is responsible for parsing the command line arguments and calling the appropriate methods to generate the report.
-\end{itemize}
+% convert this list to a table
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{p{0.2\textwidth}p{0.7\textwidth}}
+        \toprule
+        \textbf{Module} & \textbf{Description} \\
+        \midrule
+        \texttt{benchmark} & Contains the benchmarking suite, which is responsible for the evaluation of the text. The main class of \texttt{CreativityBenchmark} lives here. \\
+        \texttt{loaders} & Contains the data preprocessing pipeline and methods for downloading and loading static assets needed for either downloading testing suites or, more essentially, assets for benchmarking the text. \\
+        \texttt{models} & Contains methods for accessing language models that may be used if not otherwise supplied by the user themselves. \\
+        \texttt{utils} & Contains utility functions used throughout the package. \\
+        \texttt{metrics} & Contains key methods implementing metrics used throughout the package for the evaluation of the text. \\
+        \texttt{\_\_init\_\_.py} & The main entrypoint of the package. It bootstraps all essential modules and exposes the main classes and methods of the package to the user, for example, when they call \texttt{import madhatter} in their code. \\
+        \texttt{\_\_main\_\_.py} & The main entrypoint of the package when used as a CLI tool. Responsible for parsing the command line arguments and calling the appropriate methods to generate the report. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 
-The main code can be found in the \texttt{src/madhatter} directory. The files ending in the \texttt{.py} extension are the ones responsible for the actual implementation of the project, whilst the mirror files ending in the \texttt{.pyi} extension are stub files meant to complement the actual implementation files with type annotations. The stub files are used by the \texttt{mypy} type checker to ensure that the code is type-safe, along with other code analysis tools to provide rich type information for other developers using the package.
+The files ending in the \texttt{.py} extension are the ones responsible for the actual implementation of the project, whilst the mirror files of the same name but ending in the \texttt{.pyi} extension are stub files meant to complement the actual implementation files with type annotations. The stub files are used by the \texttt{mypy} type checker to ensure that the code is type-safe, along with other code analysis tools used by various IDEs to provide rich type information for other developers using the package.
 Figure \ref{fig:package_structure} provides a high-level overview of the main structure of the package.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.5\textwidth]{../src/plots/packages.png}
+    \includegraphics[width=0.5\textwidth]{../src/notebooks/plots/packages.png}
     \caption{Detailed separation of the modules \textsc{Mad Hatter} is divided into along with their dependencies.}
     \label{fig:package_structure}
 \end{figure}
 
-\section{Text Processing Pipeline}
-The main class for the text processing pipeline is the \texttt{CreativityBenchmark} class. Upon initialization with a given text, the class preprocesses the text, as follows:
+\section{Benchmark Class}
+The main class for the text processing pipeline is the \texttt{CreativityBenchmark} class. The class contains all the methods needed to process the text and generate a report. The class is initialized with a text, and the text is processed through a pipeline of methods that are responsible for tokenizing, tagging, and lemmatizing the text. 
+
+\subsection{Text Processing Pipeline}
+Upon initialization with a given text, the class preprocesses the text through a simple pipeline (visualized in Figure \ref{fig:processing_pipeline}).  Table \ref{tab:pipeline} outlines the exact steps of the pipeline we apply in the implementation.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../src/notebooks/plots/pipeline.png}
+    \caption{Example text processing pipeline. \href{https://spacy.io/usage/processing-pipelines}{Resource made available by SpaCy documentation contributors.}}\label{fig:processing_pipeline}
+\end{figure}
 
 \begin{table}[htbp]
     \begin{tabular}{p{0.2\textwidth}p{0.7\textwidth}}
@@ -43,26 +85,255 @@ The main class for the text processing pipeline is the \texttt{CreativityBenchma
         \midrule
         Tokenization & Splitting the text into tokens, those being words (list of words), sentences (list of sentences), and words in sentences (list of words in list of sentences) \\
         Tagging & Assigning a part-of-speech tag to each token, e.g. ``running'' $\to$ ``verb'' \\
-        Lemmatization & Converting the tokens to their base form, e.g. ``running'' $\to$ ``run'' \\
-        Stopword Removal & Removing stopwords, e.g. ``the'', ``a'', ``an'', etc. \\
+        % Lemmatization & Converting the tokens to their base form, e.g. ``running'' $\to$ ``run'' \\
+        % Stopword Removal & Removing stopwords, e.g. ``the'', ``a'', ``an'', etc. \\
         \bottomrule
         
     \end{tabular}
-    \caption{The steps of the text processing pipeline.}
+    \caption{The steps of the text processing pipeline.}\label{tab:pipeline}
 \end{table}
 
-The process can be visualized in Figure \ref{fig:processing_pipeline}. 
+Following this initial process, all variables are accessible to users via the class' instance variables, where some of the text processing ones have been listed in Table \ref{tab:instance_variables}. 
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{p{0.2\textwidth}p{0.7\textwidth}}
+        \toprule
+        \textbf{Variable} & \textbf{Description} \\
+        \midrule
+        \texttt{title} & The title of the text. \\
+        \texttt{words} & The text tokenized into words. \\
+        \texttt{sents} & The sentences of the text. \\
+        \texttt{tokenized\_sents} & The sentences of the text both tokenized and POS-tagged. \\
+        \texttt{tagged\_words} & Same as above, but the sentences are not separated. \\
+        \texttt{lemmas} & The words of the text lemmatized (reduced to their basic form, e.g. ``running'' $\to$ ``run''). \\
+        \texttt{content\_words} & The content words of the text (the words with specific very common words and expressions excluded). \\
+        \bottomrule
+    \end{tabular}
+    \caption{Basic instance variables for \textsc{Mad Hatter}.}\label{tab:instance_variables}
+\end{table}
+
+After the initial processing, users are able to interact with the text via a variety of methods, the majority of which are listed in Figure \ref{fig:classes_methods}.
+
+Most users will likely be interested in the \texttt{report()} method, provided by the \texttt{CreativityBenchmark} class, which generates a \texttt{BookReport} object --- a dataclass containing the results of the various benchmarks run on the text. The report function has several feature flags that may include or exclude certain features from the report. The flags are as follows:
+
+\begin{itemize}
+    \item \texttt{include\_pos}: whether to include the POS tag distribution in the report.
+    \item \texttt{include\_llm}: whether to include the LLM metrics in the report.
+    \item \texttt{kwargs}: other keyword arguments to adjust the output of the LLM metrics.
+\end{itemize}
+
+Furthermore, the class provides basic plotting utility functions for the user to display some basic information about the text. Some of them may be more useful than others depending on the text.
+We showcase the following ones:
+
+\begin{description}
+    \item[\texttt{plot\_postag\_distribution()}] plots the POS tag distribution of the text over its length. Users may be interested in seeing where in the text certain POS tags are more prevalent, e.g. some users may want to narrow down on sections where there is a high concentration of adjectives -- such as passive scenes where there may be some description of the setting of a novel, for example -- or verbs -- where there may be a lot of actions going on.
+    \item[\texttt{plot\_transition\_matrix()}] plots the transition matrix of the POS tags in the text. This a matrix-like structure displaying which POS tags follow which other POS tags, e.g. determiners are likely to be followed by adjectives and nouns, adjectives are likely to be followed by nouns, and so on. This may be useful for users to get a sense of the structure of the text.
+    \item[\texttt{plot\_report()}] plots the report generated by the \texttt{report()} method. This may be useful for users to get a sense of the overall metrics of the text. It provides an intuitive interface in the form of a spider chart displaying how the text performs on each of the metrics compared to some global norm. The method can be customized with different norms depending on the type of text the user is analysing. For example, legal documents, news articles and short stories vary a lot in terms of structure, so if we apply one single norm, we will see that for example legal documents tend to have much longer sentences than either of the two other categories. Thus, using a common norm for all text documents may not be the best approach to evaluating the text as opposed to others in the said field.
+\end{description}
+
+Other than those, all methods returning text metrics provided by the \texttt{CreativityBenchmark} class are easily plottable through packages such as \texttt{matplotlib} or \texttt{seaborn}, can be reliably converted into \texttt{pandas} dataframes or \texttt{numpy} arrays, and are exportable to any of the commonly used data formats such as \texttt{JSON}, \texttt{CSV}, or \texttt{Apache Parquet} for storage. Furthermore, the Jupyter notebooks provide specific examples for how to use the package in a number of scenarios, ranging from a complete beginner to a trained data analyst.
+
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{../src/plots/pipeline.png}
-    \caption{Example text processing pipeline. Resource provided by SpaCy documentation contributors.}\label{fig:processing_pipeline}
+    \includegraphics[width=\textwidth]{../src/notebooks/plots/classes.png}
+    \caption{Available classes in \textsc{Mad Hatter} along with their class and instance methods and variables.}\label{fig:classes_methods}
 \end{figure}
 
+\section{Implemented Metrics}
+We detail the implementation of the metrics described in \ref{sec:metrics} in the following sections. Each metric is provided with a brief description, its purpose, and how it is implemented in the package. We divide the metrics into two main classes: \textbf{lightweight} and \textbf{heavyweight} depending on their complexity and the time it takes to compute them. The lightweight metrics are usually computed in linear time and relatively quick, whereas the heavyweight metrics tend to have a more complex computation mechanism and therefore tend to be slow. 
 
-\begin{figure}[htbp]
+\subsection{Simple Features}
+Simple features are typically trivial to implement and do not pose a significant challenge to the implementation, but they are nonetheless useful for the evaluation of the text and in specific scenarios extremely descriptive, while in others not so much but still provide a distinguishing factor for the text. These usually take advantage of Python's built-in data structures and methods, such as \texttt{len()}, \texttt{sum()}, \texttt{set()}, etc. and are implemented through simple list comprehensions or generator expressions (note that these are, in fact, faster than typical for-loops in Python).
+\begin{description}
+    \item[\textbf{Number of Words}] returns the total number of words in the text. This is a simple metric that is useful for the evaluation of the text. 
+
+    \item[\textbf{Average Word Length}] returns the average word length of the text in characters. A text with a high average word length may be more verbose and descriptive, whereas a text with a low average word length may be more concise and simpler to read.
+    \item[\textbf{Average Sentence Length}] returns the average sentence length of the text in characters. High average sentence length points to verbosity, very evident in legal documents. Texts with a low average sentence length may be more concise and simpler to read.
+    \item[\textbf{Average Tokens per Sentence}] returns the average number of tokens per sentence. Counts the number of tokens and averages over the total number of sentences. Relatively correlated with both the average sentence length and average word length.
+    \item[\textbf{Proportion of Content Words}] returns the proportion of content words in the text. Content words are words that are not stopwords. Stopwords are usually very common (such as ``I, we, they, can, not, do, etc\dots''), and do not provide much meaning to the text. 
+    
+    Implemented with the use of an efficient HashSet lookup, the method counts the number of content words and divides them by the total number of words in the text. The proportion of content words is a good indicator of the complexity of the text and the writing skill of the author of the text. 
+
+\end{description}
+
+\subsection{Complex Features}
+Complex features are usually more difficult to implement and require more complex data structures and algorithms to compute. These are usually implemented with lists to leverage the strengths of Pythons, and are computed with the use of lookups in fast data structures. Those typically refer to features such as \textbf{concreteness}, \textbf{imageability}, and \textbf{rare word usage}. 
+
+\begin{description}
+    \item[Concreteness] refers to the linguistic characteristic described by \cite{brysbaert2014concreteness} and is discussed more in depth in Section \ref{concreteness}. The metrics are stored in a CSV file containing the concreteness scores for the available words in the corpus by \cite{brysbaert2014concreteness}. The file is loaded into memory using a \texttt{pandas} dataframe. We implemented various methods to speed up the execution of the concreteness metric, such as caching the dataframe in memory, using fast dataframe lookups, re-indexing the dataframe with the words as index, and sorting. However, we found the most significant speed-up to be to convert the dataframe into a dictionary (HashMap). Dictionaries are highly-optimized in Python and are especially useful for fast string lookups. Therefore, we convert the dataframe into a dictionary with the words as keys and the concreteness scores as values. If a word cannot be found, the None (null) value is returned in order to avoid ambiguity with other potential replacements such as 0, some arbitrary value, or NaN (not-a-number). The concreteness score of a text is represented as the concreteness score of all of its words. The \texttt{report} function returns the mean concreteness score of the text. 
+    
+    Importantly, the words in the concreteness corpus are lemmatized, thus, we lemmatize the words in the text before looking them up in the dictionary. This is also a relatively fast operation, and we use the \texttt{WordnetLemmatizer} object provided by the NLTK library.
+    \item[Imageability] is the characteristic of words that describes how easily they can be visualized, and has been described in \ref{sec:imageabilitiy}. The metric is implemented similarly to the concreteness metric. The words are present inside a CSV file that is loaded with the use of a dataframe and converted into a dictionary mapping the word (more precisely, its lemma) to its mean imageability score. The imageability score of a text is the mean imageability score of all of its words.
+    \item[Rare Word Usage] refers to how frequently one uses not so-frequently seen words in the text. Usually this measure, however, varies wildly depending on the genre. For example, ``spine'' may be a somewhat unusually seen word in general English, maybe 1 in 300,000. However, in a medical text, it may be a very common word, maybe 1 in 10,000, a difference of potentially several magnitudes. Thus, the selection of corpus can affect this metric wildly and as such, we recommend most people to use a specific corpus or word count lists in their own context. In the application, we utilize a general word frequency list based on the BNC (British National Corpus) as described in \ref{frequency}. 
+    
+    Yet again, the results are stored in a CSV file that is cleaned and loaded into a dataframe. The column containing word frequency records occurrences per 1,000,000 words. We take the logarithm of base 10 for those with the following two motivations. 
+    \begin{enumerate}
+        \item Because word frequency closely follows Zipf's Law, as explained by authors such as \cite{powers1998zipf}, and;
+        \item The logarithm of base 10 is a monotonic transformation of the original data, thus, it preserves the order of the data. This is important because we want to be able to compare the results of the metric across different texts. It furthermore nicely constrains the range of values between 0 ($10^0=1$) and 6 ($10^6=1,000,000$), which is a more manageable range than the original data.
+    \end{enumerate}
+
+    After the transformation is applied, we construct a dictionary with the lemmas and their respective frequencies for fast lookups. Results are returned as Python lists, and, if a word cannot be found, again, \textit{None} is returned. The rare word usage score of a text is the mean frequency of all of its words.
+\end{description}
+
+
+\subsection{LLM-based Features}
+We introduce two metrics based on \acrfull{mlm} word masking. Firstly, we introduce the relevant functions for extracting the MLM predictions for a given text.
+
+\subsection*{Process}
+
+The process is as follows: we mask a word in a given section of the text, and we ask the model to predict the masked word. The model returns a probability distribution over the vocabulary, and we take the top K likeliest words (sorted by likelihood to be the masked word) - this is all done by the \texttt{metrics.predict\_tokens()} function which returns \texttt{Prediction} objects. In all cases we use the BERT (Bidirectional Encoder Representations from Transformers) model introduced by \cite*{devlin2019bert}, and more specifically, \texttt{bert-base-uncased}, as provided by HuggingFace's \texttt{transformers} library. 
+    
+    \texttt{Prediction} objects are a dataclass instance containing the following fields:
+    \begin{itemize}
+        \item \texttt{word}: the token that was masked.
+        \item \texttt{tag}: the original POS tag of the word.
+        \item \texttt{suggestions}: a list of the top K predictions for the masked token.
+        \item \texttt{probs}: a list of the likelihoods of the top K predictions for the masked token.
+    \end{itemize}
+
+    Essentially, the text we use as context can be one of two things: 
+
+    \begin{enumerate}
+        \item \textbf{Individual Sentences} -- we mask a word in a sentence and ask the model to predict it. This is useful for evaluating the text on a sentence-by-sentence basis. This is defined as the function \texttt{models.sent\_predictions()}.
+        \item \textbf{Sliding Window} -- we mask a word in a sliding window of a given length in tokens. This is useful for evaluating the text on a more global level. This is defined as the function \texttt{models.sliding\_window\_preds()}.
+    \end{enumerate}
+    
+    The default behaviour here is to use a sliding window of 20 tokens \underline{before and after}, but this can be adjusted by the user. Below we show an example for a short sentence split into words and sliding window length of 3 tokens before and after. 
+    \begin{quotation}
+        The  | quick | brown | \colorbox{brown}{ fox } | jumped | over | the | lazy | dog |   .   |   \dots   |
+    \end{quotation}
+
+    The algorithm carries out a few steps before trying to predict for the word: firstly, it checks if the word is \underline{not} present in a list of stopwords, and secondly, it checks if the word is of a tag we may be interested in. If any of the two conditions fail, we skip the word and continue on. For example, users can decide whether they do not want to predict for nouns or verbs, etc. This cuts down on computation time and avoids possibly uninteresting predictions. Likewise for stopwords, we may not be interested in predicting for words such as ``the'', ``a'', ``an'', etc.
+
+    Now, we attempt to predict for the word \textit{fox} and a sliding window of 3. This means that the MLM receives the following input: \textit{``the quick brown [MASK] jumped over the''}. For this particular example, the model suggests the following results:
+
+    \begin{table}[htbp]
+        \centering
+          \begin{tabular}{rl}
+        \toprule
+               Likelihood &       Token \\
+        \midrule
+        9.453183 &    eyes \\
+        8.290386 &     man \\
+        8.150213 &   foxie \\
+        8.013705 &     cat \\
+        \dots \\
+        6.271477 &    bird \\
+        \bottomrule
+        \end{tabular}  
+    \end{table}
+
+
+        We record those as a \texttt{Prediction} object and move on to the next word and its context. We do this for all possible words and obtain a list of \texttt{Prediction} objects, which we can then use to compute the predictability metric.
+
+
+\subsection*{LLM-based Metrics}\label{sec:llm_metrics}
+Additionally, we apply methods for context-dependent LLM-based feature metrics defining two novel metrics for the evaluation of the text. These we name the \textbf{surprisal} and \textbf{predictability} metrics. We describe the implementation of these metrics in the following sections. 
+
+\begin{description}
+    \item[Predictability] has been defined as a measure of a \acrfull{mlm}'s confidence in predicting a masked word given some context. 
+        Now, \textbf{predictability is defined as the averaged gradient of the top K suggestions in the probability distribution over the vocabulary}. 
+        The gradient is computed using second order accurate central differences in the interior points and either first or second order accurate one-sides (forward or backwards) differences at the boundaries. 
+        
+        In layman's terms, at the boundaries, we calculate only the first difference. This means that at each end of the array, the gradient given is simply, the difference between the end two values, divided by 1. Away from the boundaries, the gradient for a particular index is given by taking the difference between the values on either side and dividing by 2. For example,
+
+        \begin{align*}
+            y[0] &= \frac{y[1] - y[0]}{1} \\
+            y[1] &= \frac{y[2] - y[0]}{2} \\
+            y[2] &= \frac{y[3] - y[1]}{2} \\
+            \dots \\
+            y[n-1] &= \frac{y[n] - y[n-2]}{2} \\
+            y[n] &= \frac{y[n] - y[n-1]}{1}
+        \end{align*}
+
+        We do this over all possible suggestions and obtain a list of differences, e.g. \newline $[-1.16279697, -0.65148497, -0.13834047, \dots, -0.14180756]$ for the example predictions provided above. \textbf{Finally, we take the average of this list to get a sense for how rapidly the probability distribution's confidence falls}. The lower the value (it is always negative, as the list is always sorted and therefore the values will always be negative), the more rapidly the confidence falls, and the more certain the model is that the word is one of these K suggestions. 
+        
+        For more intuitive understanding of this metric by users, we take the absolute value of the average gradient. We reason this by saying that the intuition of \textit{high values correspond to high predictability and low values correspond to low predictability} is more natural than low (negative) values correspond to high predictability and high (negative) values to low predictability. It may be more accurate to call this a measure of the model's certainty on the word given the context, rather than predictability of the word given the context.
+
+
+        \item[Surprisal] is a derivative metric using the list of \texttt{Prediction} objects returned by either of the two methods described above. Surprisal is defined as the average similarity between the top K suggestions and the original word, given by some similarity metric. We implement several methods for computing the similarity between two words, namely:
+        \begin{itemize}
+            \item \textbf{Cosine Similarity} (the default method). The cosine similarity between two word vectors. The words are turned into dense vectors using Word2Vec vectors (described in \ref{word2vec}) and the similarity is computed using the cosine similarity metric.
+            \item \textbf{WordNet Lin Similarity} -- the WordNet Lin similarity between two words. The words are turned into synsets using WordNet synsets (described in \ref{wordnet}). Because words can have multiple recorded WordNet meanings, we avoid adding additional overhead of disambiguating the meaning of the words (and we cannot be sure since the nature of the MLM prediction does not return a tag, just some token), and instead fall back on the heuristic of returning the most common word sense given a POS tag, e.g. ``fox.n.01''. Since we already know the POS tag with high degree of certainty. The similarity is computed using the WordNet Lin similarity metric which is based on the Information Content (IC) of the Least Common Subsumer (most specific ancestor node) and that of the two input synsets. The relationship is given by:
+            
+            \begin{equation}
+                \text{Lin}(s_1, s_2) = \frac{2 * IC(lcs)}{IC(s_1) + IC(s_2)}
+            \end{equation}
+
+            For this metric, we need some information content, which is a measure of how specific a synset is. By default, we use the information content provided by the NLTK WordNet corpus, which is based on the Brown corpus, but this can be adjusted by the user.
+
+            \item \textbf{WordNet Wu-Palmer Path Similarity}. The words are turned into synsets using WordNet synsets (described in \ref{wordnet}). As above, we only choose the most common WordNet sense. The similarity is computed using the Wu-Palmer similarity metric which is based on the shortest path between the two input synsets. The relationship is given by the equation:
+            \begin{equation}
+                \text{Wu-Palmer}(s_1, s_2) = \frac{2 * \text{depth}(lcs)}{\text{depth}(s_1) + \text{depth}(s_2)}
+            \end{equation}
+            This similarity metric has the benefit of not requiring an additional Information Content (IC) dictionaries.
+        \end{itemize}
+
+        To reiterate, \textbf{the similarity is computed by taking the average of the similarity scores between the original word and the top K suggestions}. The higher the value, the more similar the suggestions are to the original word, and the less surprising the word is given the context. Furthermore, most of the time, the similarity is computed using Word2Vec vectors, which are dense vectors, and therefore the similarity is nicely constrained  between 0 and 1.
+
+        
+\end{description} 
+
+\section{Command-Line Interface}
+
+\textsc{Mad Hatter} is also available as a command-line interface (CLI) tool. The CLI tool is implemented in the \texttt{\_\_main\_\_.py} file and is responsible for parsing the command line arguments and calling the appropriate methods to generate a BookReport object which is printed to the console. The tool primarily takes in a text file as input and outputs a report of the text. 
+
+The tool enables ``quick and dirty'' usage of the package, and is useful for users who want to quickly evaluate a text without having to write any code. The tool provides several options to customize the report object, such as the usage of the heavyweight LLM metrics, the ability to include POS tags, specify context length for LLM predictions, and so on. We plan to extend this tool with plotting capabilities in the future, but for now, the tool is limited to printing the report to the console.
+
+\section{Dependencies}
+
+\textsc{Mad Hatter} is built on top of several open-source libraries and packages. We list the most important ones below:
+
+\paragraph{NLTK}  (Recommended Version: 3.7.0)
+
+
+The Natural Language Toolkit (NLTK) is a Python library for Natural Language Processing (NLP) tasks. It provides a wide variety of tools for text processing, such as tokenization, tagging, lemmatization, and so on. We use NLTK for the majority of the text processing pipeline, and it is a crucial dependency for the package. The initial preprocessing pipeline is entirely carried out through NLTK, and the package would not be possible without it.
+
+\paragraph{NumPy} (Recommended Version: 1.23.4)
+
+NumPy is a Python library for scientific computing. It provides a powerful N-dimensional array object, along with a variety of tools for working with these arrays. We use NumPy for the majority of the data processing and computation in the package that deals with the MLM metrics. 
+
+\paragraph{HuggingFace Transformers} (Recommended Version: 4.27.1)
+
+HuggingFace Transformers is a Python library implementing the Transformer neural network architecture as well as methods for loading and using pre-trained Transformer models from the HuggingFace Hub website\footnote{\url{https://huggingface.co/}}. We use HuggingFace Transformers for the implementation of the LLM metrics. The library provides a simple and intuitive interface for loading and using pre-trained models, and it is a crucial dependency for the loading of the MLM models.
+
+\paragraph{PyTorch} (Recommended Version: 1.13.1)
+
+We already explained the needs for PyTorch in Section \ref{sec:pytorch}. We use PyTorch for the implementation of the BERT models used for the LLM-based metrics. The \texttt{transformers} library provides a simple interface for loading the models, and PyTorch is used as the backend for the models.
+
+\paragraph{Gensim} (Recommended Version: 4.3.0)
+
+Gensim is a Python library for topic modelling, document indexing, and similarity retrieval with large corpora. We use Gensim for the implementation of the Word2Vec vectors used for the similarity metrics. The library provides a simple interface for loading the models, and it is a crucial dependency for the loading of the Word2Vec models.
+
+\paragraph{pandas} (Recommended Version: 1.5.2)
+
+pandas is a Python library providing high-performance, easy-to-use table data structures called DataFrames, as well as N-dimensional vectors called Series. The library provides a simple interface for loading and working with CSV files, and it is a crucial dependency for the loading of the concreteness, imageability, and rare word usage metrics.
+
+Furthermore, it is used for the additional experiments we carry out in Section \ref{sec:experimental_design} for preprocessing the data and then further on usage in the machine learning pipeline we implement to test the efficacy of \textsc{Mad Hatter}.
+
+\paragraph{matplotlib} (Recommended Version: 3.6.2) and \paragraph{seaborn} (Recommended Version: 0.12.2)
+
+Matplotlib is the most widely used Python library for plotting and data visualization. Seaborn is a Python library built on top of matplotlib providing a high-level interface for statistical data visualization. We use both libraries for the plotting utilities in the package, as well as visualizations for the experiment section.
+
+
+\subsection*{Others}
+
+
+We also list some additional libraries which bear mention but are not as crucial to the package as the ones listed above. These are:
+
+\begin{table}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{../src/plots/classes.png}
-    \caption{Available classes in \textsc{Mad Hatter} along with their class and instance methods and variables. }
-\end{figure}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Name} & \textbf{Version} & \textbf{Description} \\
+        \midrule
+        tqdm & 4.64.1 & Displaying progress bars, e.g. during data loading, benchmarking. \\
+        requests & 2.30.0 & Making HTTP requests, e.g. for data loading. \\
+        scikit-learn & 1.2.0 & Basic machine learning, implementation of simple pipelines. \\
+        scipy & 1.9.3 & Dependency of scikit-learn. \\
 
+        \bottomrule
+    \end{tabular}
+\end{table}

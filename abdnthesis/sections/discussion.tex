@@ -1,8 +1,43 @@
-\chapter{Discussion}
+\chapter{Discussion and Conclusion}
 \label{chap:discussion}
 
-\section{Formal evaluation of the system}
+In the following chapter, we discuss the results of the experiments conducted in the previous chapter. We also discuss the limitations of the system and the results, as well as the future work that can be done to improve the system. Finally, we conclude with a summary of the contributions of this work. 
 
-\subsection{Accomplished goals}
+\section{Formal Evaluation}
+We introduced \textsc{Mad Hatter}, a text processing and a linguistic benchmarking tool, as well as provided a set of benchmarks for evaluating the creativity of text. We have also tested our benchmarks on a set of texts, and provided a set of experiments that can be used to evaluate the system. 
 
-\subsection{Limitations of the system}
+\subsection{Evaluation of the system}
+The system for benchmarking text we implemented is a useful tool for text analysis, that fills in a niche in the Python ecosystem for textual analysis that has not been filled before -- that of a tool for benchmarking text. As we mention, the system is also a strong tool for text analysis that can be used for a variety of baseline NLP tasks, such as text tokenization, part-of-speech tagging, and word frequency analysis.
+
+\textsc{Mad Hatter} occupies a similar category of text analysis tools such as the Natural Language Toolkit (NLTK) \citep{nltk_citation}, the TextBlob library \citep{textblob}, and the spaCy library \citep{spacy2}. However, \textsc{Mad Hatter} is the only tool that provides a set of benchmarks for evaluating the creativity of text and handy operations to aid with visualization. 
+
+Similarly to the tools above, Mad Hatter is extensible and can be used to build more complex tools for text analysis. Because \textsc{Mad Hatter} has been built on top of the NLTK library, it can be extended with any of the tools provided by NLTK in the future, as well. Yet, the implemented methods are also framework-agnostic, as the main functions have been built on top of pure Python, and would require minimal configuration to be borrowed by other frameworks such as \texttt{SpaCy}, \texttt{gensim}, and others. Furthermore, as a significant portion of the project was spent on researching methods for evaluating creativity in text, and the documentation in the source code is exhaustive, the project is easily portable in other, more performant programming languages such as C++ or Rust. We hope that this project can be used as a starting point for future research in the field.
+
+
+\subsection{Evaluation of the benchmark}
+
+We carried out an evaluation on the majority of the metrics implemented in the benchmark, for the purposes of determining the validity of the metrics. We examined the metrics' effectiveness in determining the source of the text -- their genre, e.g. article, short story, or a legal document. Then, within the same genre, we followed by examining the metrics' effectiveness in determining the author of the text. Finally, we examined the metrics' effectiveness in determining whether a given text has been written by a human, or a machine.
+
+All metrics performed well \textbf{in providing distinctive features for the given texts}, and complemented each other to a high degree in the selected tasks. In terms of accuracy, the accomplished results fare well against the performance of alternative algorithms implemented for the same tasks and the same datasets. Furthermore, if we compare the methods providing said alternative algorithms, we can see that the metrics which underpin our data for the machine learning pipelines are much more lightweight and computationally efficient, and therefore have potential to be used at a large scale.
+
+The fact that our metrics can uniquely identify authors with a relatively high accuracy given the trivial computational load of the lightweight metrics, suggests that improvements and additions to metrics evaluating the text in terms of its structure,  such as the ones we proposed in Section \ref{sec:llm_metrics}, can be used to further improve the accuracy of the metrics and yield more accurate results in the difficult task of authorship identification. \textbf{We conclude that creativity boils down to the expression of an author's unique character through their work. If our algorithms were able to capture that, then we can make the claim that our metrics are a good representation of creativity.}
+
+
+% \subsection{Accomplished goals}
+
+
+\subsection{Limitations}
+We were limited in terms of the amount of time we could spend on the project, and the amount of resources we could use. Subsequently, that limited the amount and scale of experiments we could run, and the amount of data we could use. In terms of design, we have gained a valuable experience in working with NLP systems, and, if given the chance, would like to design the system in a more modular way, or such that it completely abstracts away the underlying NLP framework. We are fascinated with what we could do if we had access to a high-performance cluster, and would like to explore the possibilities of running the benchmarks on a larger scale. 
+
+These limitations, however, leave room for future work, which we discuss in a following section.
+
+\section{Contributions}
+
+As discussed in the previous section, we have made a number of contributions to the field of computational creativity. We have implemented a system for benchmarking text, and a set of benchmarks for evaluating the creativity of text. We have also provided a set of experiments that can be used to evaluate the system. These are all non-negligible, as most of the work in the niche of computational evaluation of text has been done in other topics, such as sentiment analysis, or text classification -- both of which have major importance in business applications, of course. However, the field of computational creativity is still in its infancy, and we hope that our work can be used as a starting point for future research in the field, and potential applications in the business sphere.
+
+\section{Future Work}
+
+We have identified a number of areas for future work. Firstly, improvement of the existing system is a priority. We would like to improve the system in terms of its design, and make it more modular, and more extensible. We would also like to improve the system in terms of its performance and accuracy. We would like to explore the possibility of running the benchmarks on a larger scale, and on a high-performance cluster. We would also like to explore the possibility of running the benchmarks on a larger dataset, and on a more diverse dataset. 
+
+
+Finally, we would like to explore the possibility of using the benchmarks for evaluating the creativity of text generated by LLMs, in light of recent advances in other ``creative'' AI, such as text-to-image generation and synthesis AI like Midjourney, Stable Diffusion \citep{stable_diffusion_rombach2022highresolution}, and DALL-E \citep{dall-e_ramesh2021zeroshot}.
