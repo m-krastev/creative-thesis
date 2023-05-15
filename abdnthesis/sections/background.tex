@@ -58,31 +58,90 @@ While the HMM is a useful and powerful model, it turns out that HMMs need a numb
 
 Conditional Random Fields (CRFs) have been proposed to deal with the following motivations: the adding of arbitrary features, e.g. based on capitalization or morphology (words starting with capital letters are likely to be proper nouns, words ending with -ed tend to be past tense (VBD or VBN), etc.); knowing the previous or following words (if the previous word is ``the'', the current one is not likely to be a verb).
 
-State-of-the-art \acrshort{pos} taggers use neural networks behind the hood, being either bidirectional RNNs or Transformers like BERT. 
+State-of-the-art \acrshort{pos} taggers use neural networks behind the hood, being either bidirectional RNNs or Transformers like BERT. Although for 99.9\% of applications we do not need the computational load of those in order to achieve the highest possible accuracy.
+
+\subsection{Named Entity Recognition}
+Named Entity Recognition (NER) is a task that seeks to identify and classify named entities in text into pre-defined categories. Named entities are words or phrases that are of specific types, such as names of persons, organizations, locations, expressions of times, quantities, monetary values, percentages, etc. The task of NER is to identify these entities, and classify them into their respective categories. Phrases such as ``The University of Aberdeen'', British pound, or the UN are all examples of \textbf{named entities}.
+
+Similar in nature to the task of POS tagging, named entity recognition is a relatively well known task with demonstrably high accuracy in terms of success. The task is also relatively well defined, and there are a number of datasets that can be used to train and test the algorithms.
+
+Parts of speech and named entities both are useful indicators for structure and help understand the context of a given sentence better. Knowing whether a given word is a noun or a verb not only aids in understanding whether the word is an actor or an action, but it gives hints about the structure of a sentence (for example, nouns are commonly preceded by determiners and adjectives), and the syntactic parts of the sentence (a noun is likely to be the subject of a sentence, while a verb is likely to be the predicate accompanying the subject). In much the same vein, named entity recognition is important in understanding the context of a sentence -- disambiguating between \textit{Aberdeen}, the city, the university, and the general area, is key to many natural language processing tasks such as question answering, text summarization, and information extraction.
+
+Unlike POS tagging, however, NER has more to do with identifying which spans of text contain named entities. The standard approach to labeling for a span-recognition problem such as this one is BIO tagging \cite{ramshaw-marcus-1995-text-ner}. The method has been shown to treat NER like a word-by-word sequence labeling task, via tags that capture both boundary and named entity type. A sequence labeler (HMM, CRF, RNN, Transformer, etc.) is trained to label each token in a text with tags that indicate the presence (or absence) of particular kinds of named entities. Usually, however, many commercial implementations of NER algorithms use a rule-based approach to the problem, as it is more efficient at scale \citep{li-etal-2011-systemt-ner}. 
+
 
 \subsection{Word Sense Disambiguation}
 
-\note{both of these can be included as potential metrics}
-\subsection{Sentiment Analysis}
+The study of word sense disambiguation refers to the task of determining the sense of a word in a given context. For example, the word ``bank'' can have multiple meanings, depending on the context. In the sentence ``I went to the bank to withdraw some money'', the word ``bank'' refers to a financial institution. However, in the sentence ``I sat on the bank of the river'', the word ``bank'' refers to the edge of the river. This is a difficult task, as it requires the system to understand the context of the word, and the meaning of the word in that context.
 
-\subsection{Named Entity Recognition}
+Various approaches have been suggested, such as the Lesk algorithm \cite{10.1145/318723.318728} which tries to look for some overlap between the usages of two given words in their general context. Additionally, the Simplified Lesk algorithm has been proposed \citep{kilgarriff_framework_2000_lesk} to provide a simpler computational approach to the problem. The Simplified Lesk algorithm looks for lexical overlap between the dictionary definitions of the words. The algorithm has been shown to be effective in some cases, but not always. Other approaches have been proposed, such as the Cosine Lesk and the Extended Lesk algorithm \citep{banerjee2002extended}, which uses the overlap between the dictionary definitions of the words, as well as the overlap between the dictionary definitions of the words and the words themselves. The Lesk family of algorithms provides a useful baseline for the task of word sense disambiguation, but it is not always effective.
 
-% Maybe not discuss this in general
-\subsection{Phonetic Analysis}
+Relations between word senses may include synonymy, antonymy, meronymy, and sometimes taxonomic relations such as hyponymy and hypernymy. WordNet \citep{wordnet1998fellbaum,wordnet_princeton} is a lexical database of English, which provides a set of relations between words. As a lexical database, it not only acts as a dictionary containing the various senses of the possible words, but it also models relations between the words, such as the ones described above. Furthermore, many languages have implemented their own WordNets, such as the Romanian WordNet \citep{tufis2004wordnet}, and the Bulgarian WordNet \citep{dimitrova-etal-2014-coping}.
 
-\subsection{Natural Language Generation}
+Supervised approaches make use of a corpus of sentences in which individual words (lexical sample task) or all words (all-words task) are hand-labeled with senses from a resource like WordNet. Currently, SemCor \citep{semcor} is the largest known corpus with WordNet-labeled senses, in English and in general, and is actively used in testing the accuracy of approaches to word sense disambiguation. The standard supervised algorithm for WSD is 1-nearest neighbours with contextual embeddings \citep{peters-etal-2018-deep_wsd,melamud2016context2vec_wsd}.
+
+An important baseline for WSD is the most frequent sense. In terms of computational efficiency, it is the fastest. In terms of efficacy, it performs decently, similarly to the intuition of the most frequent POS tag that was explained in the previous section. In WordNet, this equates to taking the first sense. Of course, in English at least, words can be more than one part of speech, therefore, we need to account for this when we are looking for the most frequent sense. 
+
+There have also been some approaches to tackling the task of Word Sense Induction - attempting to learn word senses unsupervised.
+
+
+\section{Numerical representations of semantic tokens}
+The idea of representing words or lexical tokens as numerical vectors (or even scalars) is hardly new. 
+For example the SimLex-999 dataset \citep*{hill-etal-2015-simlex} gives values on a scale from 0 to 10, like the examples below, which range from near-synonyms (vanish, disappear) to pairs that scarcely seem to have anything in common (hole, agreement):
+
+\begin{table}[htbp]
+    \centering
+        \begin{tabular}{llc}
+            \toprule
+            word1 & word2 & score \\
+            \midrule
+            vanish & disappear & 9.8 \\
+            hole & agreement & 1.2 \\
+            \bottomrule
+       \end{tabular}
+    \caption{Example Simlex-999 pairs}
+    \label{simlex2pairs}
+\end{table}
+
+
+Early work on affective meaning by \cite{osgood1957measurement} found that words varied along three important dimensions of affective meaning:
 \begin{itemize}
-    \item top KP sampling
-    \item challenges 
+    \item valence: the pleasantness of the stimulus
+    \item arousal: the intensity of emotion provoked by the stimulus
+    \item dominance: the degree of control exerted by the stimulus
 \end{itemize}
 
+\cite{osgood1957measurement} noticed that in using these 3 numbers to represent the meaning of a word, the model was representing each word as a point in a three-dimensional space, a vector whose three dimensions corresponded to the word’s rating on the three scales. This revolutionary idea that word meaning could be represented as a point in space (e.g., that part of the meaning of heartbreak can be represented as the point $[2.45,5.65,3.58]$) was the first expression of the vector semantics models that we introduce in Section \ref{sec:word2vec}.
+
+\subsection{Concreteness}
+As demonstrated by the 3 factors of valence, arousal and dominance, words may exert an effect on human understanding -- that is, words can have influence. Some of these numerical representations, therefore, can intrinsically lead to areas of psychology -- a field of study connecting psychology and language studies (linguistics) called psycholinguistics \cite{tausczik_psychological_2010}. One explored measure from this field is the concreteness aspect of a word. 
+
+Concreteness refers to the extent to which a word refers to a tangible object or a concept that can be experienced by the senses. For example, the word ``cup'' is a concrete word, as it refers to a tangible object that can be experienced by the senses. On the other hand, the word ``time'' is an abstract word, as it refers to a concept that does not appear concrete -- not a thing one can touch or taste. 
+
+Concreteness ratings for words have been studied since a long time ago \cite{brysbaert2014concreteness}.
+\cite{brysbaert2014concreteness}, for example, carries out a study on the concreteness of words, and provides a dataset of concreteness ratings for 40,000 English words. The dataset is available online and presents an interesting topic of research. 
+
+\subsection{Imageability}
+Imageability is a measure of how easily a word can be visualized. For example, the word ``cup'' is a highly imageable word, as it is easy to visualize a cup, while ``truth'' is not a highly imageable word. As with the concreteness aspect of words, imageability is a measure that has been studied and has deep roots in the field of psycholinguistics. \cite{cortese_imageability_2004}, for example, studies the imageability of 3000 one-syllable words and how study participants react to them. Said study provides a dataset of imageability ratings for 3000 one-syllable words, and poses an interesting topic of research.
 
 \section{Creative Measures}
-The field of creativity has been broadly studied, initially by psychologists, and more recently by computer scientists. 
-Intuitively, the nature of creativity is a subjective matter, and therefore, it is difficult to define. However, there are some commonalities that can be found in creative works. For example, creativity is often associated with novelty, and is often associated with the ability to generate new ideas. \cite{franceschelli_deepcreativity_2022}, for example, determine the three factors of creativity as value, novelty, and surprise, and then explore machine learning approaches to measuring creativity. We agree with them, but decide not to limit ourselves to just these three. However, their contributions provide insights we can use in our work. \mk{did we use it - if we did not, delete this sentence} 
-\begin{itemize}
-    \item Burstiness of verbs and derived nouns: Patterns of language are sometimes `bursty' \cite{pierrehumbert_burstiness_2012}. This paper presents an analysis of text patterns for domain X. measures include XYZ...
-    \item 
-\end{itemize}
+The field of creativity has been broadly studied, initially by psychologists, and more recently by computer scientists, and many have pondered the nature of creativity. Is creativity a skill that can be learned, or is it an innate ability? Is creativity a skill that can be measured, or is it a subjective matter \citep{cropley2003creativitytests}?
 
-\section{Tools}
+Intuitively, the nature of creativity is a subjective matter, and therefore, it is difficult to define. Many have tried to put forward a definition of creativity \citep{runco_standard_2012}. \cite{plucker2004creativity} instates that ``researchers, when dealing with the topic of creativity, must:
+
+\begin{enumerate}
+    \item explicitly define what they mean by creativity
+    \item avoid using scores of creativity measures as the sole definition of creativity (e.g., creativity is what creativity tests measure and creativity tests measure creativity, therefore we will use a score on a creativity test as our outcome variable),
+    \item discuss how the definition they are using is similar to or different from other definitions, and 
+    \item address the question of creativity for whom and in what context.''
+\end{enumerate}
+
+However, there are some commonalities that can be found in creative works. For example, creativity is often associated with novelty, and is often associated with the ability to generate new ideas. \cite{franceschelli_deepcreativity_2022}, for example, determine the three factors of creativity as value, novelty, and surprise, and then explore machine learning approaches to measuring creativity. We agree with them, but decide not to limit ourselves to just these three. However, their contributions provide insights we can use in our work. 
+
+% did we use it? if we did not, delete this sentence - f u 
+
+Attempts have been made at recognizing structure in text, such that some can recognize patterns. \cite{pierrehumbert_burstiness_2012}, for example, demonstrates that verbs and derived nouns are bursty, that is, they tend to appear in bursts. This is an example of a pattern that can be found in text, and leads to interesting insights about the structure of text.
+
+\cite{Jordanous2012} suggests that creativity is a multi-faceted concept, and that there are many different approaches to the problem, but also puts forward a standardized procedure for evaluating creative systems. Furthermore, \cite{jordanous_modelling_2016} goes on to attempt to model creativity through identifying key components of corpora -- of text. Although more modern approaches to the field of creativity analysis have access to state-of-the-art LLMs, some of the insights of rule-based approaches can prove useful. \cite{perez_mexica_2001} provide one such rule-based approach to attempt to generate creative writing. The topic of neural text generation is also a fascinating topic of research that we feel is important in our context.
+
+In our exploration, we investigate both statistical and structural markers of individual characteristics of text -- features that can uniquely identify a given text, along with patterns common for a given genre or author. We also investigate the effect of words on the reader, and how those effects can be used by authors to the effect of solidifying an author's style. We also hypothesize a set of novel measures that can be linked with the understanding of structure in text.  

@@ -1,16 +1,132 @@
 \chapter{Maintenance Manual}
 
-This should be used to describe the details of your implementation. It should be usable by people wanting to install the program, modify the program, extend the program, or trace bugs in its execution. This is an important part of the documentation, and you should ensure that you include details such as:
-• instructions on how to install the system
-• instructions on how to compile/build the system
-• hardware/software dependencies, including libraries and other packages
-8
-• Organisation of system files, including directory structures, location of files within directories, details of any temporary files
-• space and memory requirements
-• list of source code files, with a summary of their role
-• crucial constants, and their location in the code
-• the main classes, procedures, methods or data structures
-• file pathnames, particularly for accessing files of data values • directions for future improvements
-• bug reports
-Again, the Maintenance Manual must be included as an appendix to the main report and will therefore be marked as part of the disserta- tion. (this is in addition to a copy of the maintenance manual with the code tar file)
-Here is an example template project report document, and here is a tarfile of the corresponding LaTeX source (on Unix, just type “make”).
+We outline a short maintenance manuals for contributors to the project. The maintenance manual is also available as a README file in the project repository on \href{https://github.com/Rinto-kun/madhatter}{GitHub}.
+
+\section{Installation}
+Minimum Python version for usage is Python 3.7. We do not guarantee that the package will work on any earlier versions of Python.
+The package is available on PyPI, and can be installed with the following command:
+
+\begin{lstlisting}[language=bash]
+    pip install madhatter
+\end{lstlisting}
+
+This will install the package and its dependencies. The dependencies are listed below.
+
+\subsection{Dependencies}
+The package has the following dependencies:
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Name} & \textbf{Version} & \textbf{Description} \\
+        \midrule
+        nltk & 3.6.5 & Natural Language Toolkit, used for text processing. \\
+        numpy & 1.21.3 & Used for numerical operations. \\
+        pandas & 1.3.4 & Used for data analysis. \\
+        transformers & 4.27.1 & Used for running LLMs. \\
+        torch & 1.13.1 & Dependency for transformers, as well as enables operations on Tensors. \\
+        gensim & 4.1.2 & Used for word embeddings. \\
+        tqdm & 4.64.1 & Displaying progress bars, e.g. during data loading, benchmarking. \\
+        requests & 2.30.0 & Making HTTP requests, e.g. for data loading. \\
+        scikit-learn & 1.2.0 & Basic machine learning, implementation of simple pipelines. \\
+        scipy & 1.9.3 & Dependency of scikit-learn. \\
+
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{NLTK Data}
+
+We highly recommend also running NLTK's downloader module in order to have access to all of the features that Mad Hatter provides. To do so, simply run the following command, having installed the package:
+
+\begin{lstlisting}[language=bash]
+    python -m nltk.downloader all
+\end{lstlisting}
+
+If needed, the corpora can be removed by running the GUI wizard of NLTK's downloader module:
+
+\begin{lstlisting}[language=bash]
+    python -c "import nltk; nltk.download()"
+\end{lstlisting}
+
+\section{File Structure}
+\subsection{Package Structure}
+The following table outlines the package structure in detail:
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{p{0.2\textwidth}p{0.1\textwidth}p{0.6\textwidth}}
+        \toprule 
+        \textbf{Item} & \textbf{Type}  & \textbf{Description} \\
+        \midrule
+        \textbf{docs} & Directory & Contains the documentation code for the package. \\
+        \textbf{madhatter} & Directory & Contains the source code for the package. \\
+        \textbf{notebooks} & Directory & Contains the Jupyter notebooks used for the project. \\
+        \textbf{tests} & Directory & Contains the unit tests for the package. \\
+        \textbf{.gitignore} & File & Contains the files to be ignored by Git. \\
+        \textbf{.readthedocs.yaml} & File & Contains the configuration for ReadTheDocs' generator. \\
+        \textbf{LICENSE} & File & Contains the licence for the package. \\
+        \textbf{pyproject.toml} & File & Contains the configuration for the package. Additionally used by PyPi for managing dependencies and displaying basing info to potential users. \\
+        \textbf{README.md} & File & Contains a basic user guide for the package. \\
+
+    \end{tabular}
+\end{table}
+
+\subsection{Source Code Structure}
+
+The source code in Python is structured as follows:
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{p{0.2\textwidth}p{0.7\textwidth}}
+        \toprule
+        \textbf{Module} & \textbf{Description} \\
+        \midrule
+        \texttt{benchmark} & Contains the benchmarking suite, which is responsible for the evaluation of the text. The main class of \texttt{CreativityBenchmark} lives here. \\
+        \texttt{loaders} & Contains the data preprocessing pipeline and methods for downloading and loading static assets needed for either downloading testing suites or, more essentially, assets for benchmarking the text. \\
+        \texttt{models} & Contains methods for accessing language models that may be used if not otherwise supplied by the user themselves. \\
+        \texttt{utils} & Contains utility functions used throughout the package. \\
+        \texttt{metrics} & Contains key methods implementing metrics used throughout the package for the evaluation of the text. \\
+        \texttt{\_\_init\_\_.py} & The main entrypoint of the package. It bootstraps all essential modules and exposes the main classes and methods of the package to the user, for example, when they call \texttt{import madhatter} in their code. \\
+        \texttt{\_\_main\_\_.py} & The main entrypoint of the package when used as a CLI tool. Responsible for parsing the command line arguments and calling the appropriate methods to generate the report. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+The files ending in the \texttt{.py} extension are the ones responsible for the actual implementation of the project, whilst the mirror files of the same name but ending in the \texttt{.pyi} extension are stub files meant to complement the actual implementation files with type annotations. The stub files are used by the \texttt{mypy} type checker to ensure that the code is type-safe, along with other code analysis tools used by various IDEs to provide rich type information for other developers using the package.
+
+\section{Documentation}
+
+The documentation for the package is available on \href{https://madhatter.readthedocs.io/en/latest/}{ReadTheDocs}. The documentation is generated automatically from the source code using the Sphinx documentation generator engine, and is updated on every commit to the \texttt{main} branch. The documentation source code is available in the \texttt{docs} directory of the project repository, and can be extended. We encourage contributors to extend the documentation as they see fit. Any functions that users want to contribute should be properly documented using the NumPy docstring format, and should be type-annotated using the Python 3.7+ type annotations.
+
+\section{Testing}
+
+Issues, extension requests and such should be reported on the \href{https://github.com/Rinto-kun/madhatter/issues}{GitHub Issues} page of the package. Pull requests require explicit approval from the maintainers of the package. 
+
+\section{Publishing the Package}
+
+Common techniques in publishing packages apply. Ensure you have the \texttt{build} package installed and available in your Python path. Then, run the following command from the root directory of the project (the one containing the \texttt{pyproject.toml} file):
+\begin{lstlisting}
+    python -m build
+\end{lstlisting}
+
+
+The command should output information relating to the packaging, and, once completed, should generate two files in the \texttt{dist} directory:
+
+
+\begin{lstlisting}
+dist/
+|-- madhatter-v_number-py3-none-any.whl
+|-- madhatter-v_number.tar.gz
+\end{lstlisting}
+
+The tar.gz file is a source distribution whereas the .whl file is a built distribution. Newer pip versions preferentially install built distributions, but will fall back to source distributions if needed. 
+
+You should always upload a source distribution and provide built distributions for the platforms your project is compatible with. In this case, our example package is compatible with Python on any platform so only one built distribution is needed.
+
+To upload the package to PyPI, you can use Twine. Install Twine and configure it with credentials for your PyPI account. Then run Twine to upload all of the archives under dist to PyPI:
+
+\begin{lstlisting}
+    python -m twine upload dist/*
+\end{lstlisting}

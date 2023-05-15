@@ -30,44 +30,23 @@ Some datasets were considered, however, discarded due to: not being deemed appli
 The Corpus of Contemporary American English (COCA)\footnote[2]{\url{https://www.english-corpora.org/coca/}} is a large corpus of American English, containing nearly 1 billion words of text from contemporary sources. It is a collection of texts from a variety of genres, including fiction, non-fiction, and academic writing. The corpus offers a variety of tools for analysis of the data, including a concordance tool, a word frequency list, and a collocation finder. Naturally, many of those tools could be used in the field of statistical creativity analysis that we explore.
 
 The corpus does offer limited access to the full API, as well as free samples of the data, however, the full corpus is not available for free, and the cost of acquiring it is prohibitive for the limitations set forward by the project. Nevertheless, the corpus is a valuable resource for the field of computational linguistics, and we would like to explore it further given less constraints.
-\section{WordNet}
+
+\section{Word Sense Similarity}
+
+\subsection{WordNet}\label{sec:wordnet}
 WordNet\citep{wordnet1998fellbaum} is a lexical database of semantic relations between words that links words into semantic relations including synonyms, hyponyms, and meronyms. The synonyms are grouped into synsets (sets of synonyms) with short definitions and usage examples. It can thus be seen as a combination and extension of a dictionary and thesaurus \citep{enwiki:1143619785}. 
 
 For our specific use cases, we have identified it as a valuable resource in terms of relational representation of words in semantic space. In the given context, this enables us to traverse a semantic graph for synonyms and related words for the goal of enriching potential similarity between the set of creative parts of speech (i.e., nouns, adjectives, adverbs), which we narrow down our scope to in particular. 
+
+We can use it to look for word similarity between words. If we imagine synsets as a connected graph, usually words are similar when the distance between their synsets in terms of traversing the graph is shorter, and longer when there is no short path to reaching the other word. This is a useful property for our use case, as we can use it to determine the similarity between words in a given text, and thus, that can aid us in evaluating the creativity of the text.
+
 % this sounds a bit weird
-% insert potential uses
-\subsection{Numerical representations of semantic tokens}
-\mk{Potentially move this section to background work}
-The idea of representing words or lexical tokens as numerical vectors (or even scalars) is hardly new. 
-For example the SimLex-999 dataset \citep*{hill-etal-2015-simlex} gives values on a scale from 0 to 10, like the examples below, which range from near-synonyms (vanish, disappear) to pairs that scarcely seem to have anything in common (hole, agreement):
 
-\begin{table}[htbp]
-    \centering
-        \begin{tabular}{llc}
-            \toprule
-            word1 & word2 & score \\
-            \midrule
-            vanish & disappear & 9.8 \\
-            hole & agreement & 1.2 \\
-            \bottomrule
-       \end{tabular}
-    \caption{Example Simlex-999 pairs}
-    \label{simlex2pairs}
-\end{table}
+\subsection{Word2Vec}\label{sec:word2vec}
 
+\citet*{mikolov_word2vec_2013} show in their work that words may be represented as dense vectors in $N$-dimensional space, and we can perform mathematical operations on them that may yield effective results in terms of word representation. What that means in our context is that we can measure similarity -- or distance -- between individual words, without knowing beforehand their part of speech of context. We can use such learned representations of words in terms of vector embeddings to determine the similarity between words in a given text.
 
-Early work on affective meaning by \cite{osgood1957measurement} found that words varied along three important dimensions of affective meaning:
-\begin{itemize}
-    \item valence: the pleasantness of the stimulus
-    \item arousal: the intensity of emotion provoked by the stimulus
-    \item dominance: the degree of control exerted by the stimulus
-\end{itemize}
-
-\cite{osgood1957measurement} noticed that in using these 3 numbers to represent the meaning of a word, the model was representing each word as a point in a three-dimensional space, a vector whose three dimensions corresponded to the word’s rating on the three scales. This revolutionary idea that word meaning could be represented as a point in space (e.g., that part of the meaning of heartbreak can be represented as the point $[2.45,5.65,3.58]$) was the first expression of the vector semantics models that we introduce next. \mk{**You can paraphrase this**}
-
-\subsection*{Word2Vec}
-
-\citet*{mikolov_word2vec_2013} show in their work that words may be represented as dense vectors in $N$-dimensional space, and we can perform mathematical operations on them that may yield effective results in terms of word representation. 
+This serves a fascinating purpose in our exploration of metrics such as surprisal that we detail further below. 
 
 \subsection*{Measuring distance in vector representations of semantic tokens}
 Intuition tells us that the dot product of vectors in $N$-dimensional space will grow when the set of vectors has similar values and decrease when the values are not similar. Thus, we can then construct the following metric for semantic similarity between vector representations of words:
@@ -130,14 +109,14 @@ The dataset provides norms for the 40,000 words and 2,896 two-word expressions -
 The intuition of this metric is that a word that is more concrete is more likely to be used in a creative context, as it is easier to imagine and relate to. It not only describes one aspect of the word's meaning, but authors (and genres, in general), tend to exhibit specific characteristics, such as legal documents being more generally more concrete - one would expect concrete objects and entities to appear more in documents such as the UN Human Rights Charter, or protocols for health standards control, for example. 
 
 \subsection{Imageability}
-\label{imageability}
-Imageability is the degree to which a word evokes a mental image, as described by \cite{degroot1989representational}. For example, the word \textit{apple} is more imageable than the word \textit{time}. \cite{brysbaert2014concreteness} provide a dataset of imageability ratings for 9,000 English lemmas (English words and 2,896 two-word expressions (such as ``zebra crossing'' and ``zoom in''), obtained from over four thousand participants by means of a norming study using internet crowdsourcing for data collection). The dataset is based on the imageability ratings of the four thousand participants, who rated the imageability of 9,000 words on a scale from 1 to 5. The dataset also contains the number of participants who rated each word, and the standard deviation of the ratings.
+\label{sec:imageability}
+Imageability is the degree to which a word evokes a mental image, as described by \cite{degroot1989representational}. For example, the word \textit{apple} is more imageable than the word \textit{time}. \cite{cortese_imageability_2004} provide a dataset of imageability ratings for 3,000 single-syllable English lemmas, obtained from over four thousand participants by means of a norming study using internet crowdsourcing for data collection. The dataset is based on the imageability ratings of the four thousand participants, who rated the imageability of the 3,000 words on a scale from 1 to 7. The dataset also contains the number of participants who rated each word, the standard deviation of the ratings, the mean and the standard deviation for the reaction time of the participants.
 
 \subsection{Frequent Word Usage}
 \label{frequency}
 
 \begin{quote}
-\textit{    “Separate text from context and all that remains is a con.”}― Stewart Stafford 
+\textit{    “Separate text from context and all that remains is a con.”} -- Stewart Stafford 
 \end{quote}
 
 Word frequency refers to the number of times a given word appears in a given context. Word frequency naturally differs from text to text, and smart word choice in general is an excellent indicator for intellectual linguistic use. The intuition behind selecting this metric is that words that are occurring less frequently in common speech are more likely to be used in a creative context. To give an example by rewording the last sentence, would yield: ``The intuition behind identifying this linguistic measure owes to the words' property of inverse proportionality between frequency and perceived creative or intellectual value.''
@@ -169,3 +148,57 @@ Like before, if a word does not appear in the BNC, we discard it and continue. W
 
 \subsection{Proportion of Parts of Speech}
 \label{pos_prop}
+
+\begin{quote}
+\textit{    “The difference between the right word and the almost right word is the difference between lightning and a lightning bug.”} -- Mark Twain
+\end{quote}
+
+We hypothesize that the proportion of part of speech tags can have meaning in terms of distinguishing genre and author characteristics. For example, a text with a larger proportion of nouns is likely to be inherently different to a text containing a larger proportion of verbs or adjectives. In fiction and creative writing, we are likely to see a higher prevalence of nouns and verbs, as those tend to describe abstract concepts, or to portray some scene with characters. Legal documents may be more heavily reliant on having more nouns and adjectives, as they are more likely to be used in a descriptive context. Internet forums and social media posts are likely to have a higher proportion of verbs, as they are more likely to be used in a conversational context, and attention is more likely to be focused on the action rather than the object. In general, we expect the proportion of parts of speech to be indicative of the genre of the text, and therefore, we can use it as a metric for creativity and classifying genre.
+
+We use the NLTK library \citep{nltk_citation} to perform part of speech tagging on the text. We then calculate the proportion of each part of speech tag in the text, and return the metric for interpretation by the end user. For most purposes, we use the universal tagset, which makes no distinction, for example, between common nouns such as `person' or `city', and proper nouns such as `Alice' and `London', and instead groups them together under the tag `NOUN'. We encourage more ambitious authors to explore the possibilities of using the more fine-grained tagsets, such as the Penn Treebank tagset.
+
+\subsection{Predictability}\label{predictability}\label{heavyweight_metrics}
+
+\begin{quote}
+\textit{    “The most exciting phrase to hear in science, the one that heralds new discoveries, is not `Eureka!' but `That's funny...'}” -- Isaac Asimov
+\end{quote}
+
+
+One aspect of creativity relates to how we perceive novelty in using already existing concepts. Imagine a person who has only ever read and knows a single book. For them, any other book they read after that has the potential to be infinitely more different from the first book they know. However, a person who has read a thousand books, is likely to not perceive much novelty in most of the text of the thousand and first book they get to read. Yet, this aspect of novelty is precisely what some people may consider to be creative -- proposing novel solutions to an existing or even a non-existing problem.
+
+Consider again the example of the person who has read a single book and the person who has read a thousand books. In a sense, this aspect of value and novelty is completely subjective and dependent on the individual's prior knowledge. However, common sense is something that a majority of the people have. This common sense means that there must be some unifying factor between people that makes them perceive novelty in a similar way. We hypothesize one such factor to be what we call the predictability of the text.
+
+Predictability refers to how predictable words are in a given context. For example, given the sentence ``Jenny was feeling sick, so Jenny went to the \dots'', one would commonly expect the next word to be ``doctor'', as it is the most predictable word in this context. However, if the next word is ``beach'', we could say that the sentence is more creative, as it is less predictable. Naive intuition tells us that the more predictable a word is, the less creative it is. Of course, naive is the key word here, as we make some overly simplifying assumptions. Exceptions to this rule will apply, but we believe that this generalizes well for the majority of cases. 
+
+Then, the common question would be how to detect this kind of predictability. In the trivial case, we can hypothesize a bigram, trigram, or some n-gram model that would be able to predict the next word in a given context. This n-gram model will have learned some probability distribution of the tokens, that is, given the context:
+\begin{equation}
+    P(\text{word}| \text{context}_1, \text{context}_2, \dots, \text{context}_{n-1}) = \text{probability of the word given the context}
+\end{equation}
+
+It will return some probability distribution for the concrete word given the context length $1, 2, \dots, n-1$. 
+We can then use this probability distribution to calculate the predictability of the text. For example, given a text, we can calculate the probability of each word in the text given the context of the previous $n-1$ words. We can take the average of these probabilities, and return the metric for interpretation by the end user. That would be a similar approach to how we calculated the concreteness and imageability ratings. But we can do better, given the state-of-the-art.
+
+Recent Large Language Models (LLMs) have shown ability to understand text even within a vast context and Transformer-based models in particular have been performing excellently in tasks such as text summarization, text generation, and question answering. We specifically turn our attention to a particular class of LLMs, called Masked Language Models (MLMs). Those are trained to predict a masked token in a given context. Given the sentence above, the model would be trained by masking each of the words in the sentence, and then predicting the masked word given the context. This leads to a model capable of understanding context to an impressive degree and predicting the next word in a given context.
+
+We put forward the intuition that one such LLM, if trained on a broad enough subset of the English language, would be able to represent something akin to ``common sense'', in terms of the linguistic capabilities of the so-called `averaged' human.
+Then, if we put the said model to work by trying to predict a word given some context, it could represent the intuition of the average human in terms of what the average human would expect to see. Therefore, instead of limiting ourselves to just some memory-hungry n-gram model, we can use a pre-trained LLM to calculate the predictability of a word within a context.
+
+Then, how would we formulate predictability of a given word, given some context, in terms of LLMs? \textbf{We define predictability as the metric of averaged gradient over the likelihoods of the top K masked token replacement suggestions}. 
+
+When we mask a word in a given context, the model can return a probability distribution of the most likely words to replace the masked token with, along with likelihoods for those words. We can take the list of the top K likelihoods and sort it into descending order for the values. We can then take the gradient of this list to obtain values for how the likelihood changes over the order of the likeliest words. A probability distribution that is more uniform will have a smaller gradient, while a probability distribution that is more skewed will have a larger gradient. We can then take the average of the gradient values, and return the metric for interpretation by the end user. 
+
+In a way, predictability is a measure of the model's confidence in its predictions. A text, for which the model is more confident in its predictions, is likely to lead to less creative text, as it is more likely to predict the most likely word in a given context. On the other hand, a text, for which the model is less confident in its predictions is likely to lead to more creative text, as it is more likely to predict a less likely word in a given context.
+
+\subsection{Surprisal}\label{surprisal}
+
+\begin{quote}  
+\textit{"Nothing is more dangerous than an idea when it is the only one you have."} -- Emile Chartier
+\end{quote}
+
+Surprisal is a metric that is closely related to predictability. In fact, surprisal follows closely the outlined algorithm for obtaining masked word suggestions given some context. The difference is that, whereas predictability deals with the model's confidence in suggesting (or, more specifically, the probability distributions), surprisal deals with the actual tokens that have been suggested. 
+
+\textbf{We define surprisal as the averaged similarity of a given word to the top K masked token replacement suggestions.} 
+
+Following the procedure above, we can obtain the top K masked token replacement suggestions for a given word in a given context. We can then calculate the similarity of the given word to each of the top K masked token replacement suggestions. We can then take the average of the similarity values, and return the metric for interpretation by the end user. We tackled the topic of word sense disambiguation back in Chapter \ref{chap:background} and Sections \ref{sec:wordnet} and \ref{sec:word2vec}, so we will not delve into the details of what we define as similarity here, but we use approaches in the resources above.
+
+The name surprisal may not be very apt for the metric, as it is not a measure of how surprised a human would be to see a given word in a given context, but nonetheless it relies on the intuition that a word that tends to have nothing in common with the top K masked token replacement suggestions is likely to be more surprising than a word that tends to have a lot in common. This kind of surprise can provide hints as to potential aspect of creativity in text.
