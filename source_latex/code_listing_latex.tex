@@ -3,6 +3,7 @@
 \usepackage{listings}
 \usepackage{hyperref}
 
+\usepackage{bookmark}
 % Default fixed font does not support bold face
 \DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{10} % for bold
 \DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{10}  % for normal
@@ -27,16 +28,18 @@ breaklines=true
 }}
 
 \pythonstyle
-
-\title{Example LaTeX file with your listings}
-\author{Prof. Felipe Meneguzzi}
+ 
+\title{Code Listings for the Mad Hatter Project}
+\author{Matey Krastev}
 
 \begin{document}
 \maketitle
 
 \section*{Introduction}
 
-The entirety of the source code included in this document is available on Github at: \url{https://github.com/abdn-honours-projects/abdn-code}.
+The entirety of the source code included in this document is available on GitHub at: \url{https://github.com/Rinto-kun/madhatter}.
+
+Mad Hatter documentation is also available at ReadTheDocs: \url{https://madhatter.readthedocs.io}
 
 \section*{Code listings}
 
@@ -44,17 +47,15 @@ In what follows, we enumerate all files distributed with this project, for conve
 
 \lstlistoflistings
 
-\lstinputlisting[language=python, caption={Action}]{python/action.py}
+\lstinputlisting[language=python, caption={\_\_init\_\_.py}]{../../madhatter/madhatter/__init__.py}
+\lstinputlisting[language=python, caption={\_\_main\_\_.py}]{../../madhatter/madhatter/__main__.py}
+\lstinputlisting[language=python, caption={Benchmark}]{../../madhatter/madhatter/benchmark.py}
+\lstinputlisting[language=python, caption={Models}]{../../madhatter/madhatter/models.py}
+\lstinputlisting[language=python, caption={Metrics}]{../../madhatter/madhatter/metrics.py}
+\lstinputlisting[language=python, caption={Utilities}]{../../madhatter/madhatter/utils.py}
+\lstinputlisting[language=python, caption={Loaders}]{../../madhatter/madhatter/loaders.py}
+\lstinputlisting[language=python, caption={Demo Notebook}]{../../madhatter/notebooks/demo.py}
+\lstinputlisting[language=python, caption={Experiment Notebook}]{../../madhatter/notebooks/experiment.py}
 
-\lstinputlisting[language=python, caption={Benchmark}]{python/benchmark.py}
 
-\lstinputlisting[language=python, caption={Heuristic}]{python/heuristic.py}
-
-\lstinputlisting[language=python, caption={Parser}]{python/pddl_parser.py}
-
-\lstinputlisting[language=python, caption={Planner}]{python/pddl_planner.py}
-
-\lstinputlisting[language=python, caption={Preprocessor}]{python/pddl_preprocessor.py}
-
-\lstinputlisting[language=python, caption={State}]{python/state.py}
 \end{document}
